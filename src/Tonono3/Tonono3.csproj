@@ -1,0 +1,90 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Configurations>Debug;Release;NativeAot</Configurations>
+    <AssemblyName>Tonono3</AssemblyName>
+    <RootNamespace>Tonono3</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <NoWarn>$(NoWarn);AVLN3001</NoWarn>
+    <ApplicationIcon>TONONO.ICO</ApplicationIcon>
+    <ResDir>resources\</ResDir>
+    <NativeAotPublishDir>$(MSBuildThisFileDirectory)..\..\publish\</NativeAotPublishDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'NativeAot'">
+    <PublishAot>true</PublishAot>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishDir>$(NativeAotPublishDir)</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tonono3.SkkEngine\Tonono3.SkkEngine.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.0.5" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.5" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.5" />
+    <PackageReference Include="tsr-di" Version="1.0.5" PrivateAssets="all" />
+    <PackageReference Include="tsr-di.Attribute" Version="1.0.3" />
+    <PackageReference Include="VYaml" Version="1.4.0" />
+    <PackageReference Include="FSharp.Core" Version="10.1.302" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="TONONO.ICO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FilesToDownload Include="SKK-JISYO.L.gz" />
+    <FilesToDownload Include="SKK-JISYO.jinmei.gz" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Config\" />
+  </ItemGroup>
+
+  <Target Name="DownloadRequiredFiles" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <BaseUrl>https://skk-dev.github.io/dict/</BaseUrl>
+    </PropertyGroup>
+    <DownloadFile SourceUrl="$(BaseUrl)%(FilesToDownload.Identity)" DestinationFolder="$(ResDir)" Condition="!Exists('$(ResDir)%(FilesToDownload.Identity)')" />
+  </Target>
+
+  <Target Name="RemoveDownloadFiles" AfterTargets="Clean">
+    <ItemGroup>
+      <FilesToClean Include="$(ResDir)%(FilesToDownload.Identity)" />
+    </ItemGroup>
+     <Delete Files="@(FilesToClean)" />
+  </Target>
+
+  <Target Name="RemoveNativeAotPublish" AfterTargets="Clean">
+    <RemoveDir Directories="$(NativeAotPublishDir)" Condition="Exists('$(NativeAotPublishDir)')" />
+  </Target>
+
+  <Target Name="CopyResourcesToOutput" AfterTargets="Build">
+    <ItemGroup>
+      <FilesNeedCopy Include="$(ResDir)**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FilesNeedCopy)" DestinationFiles="@(FilesNeedCopy->'$(OutputPath)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="UseSharedTsrDiAttributes" AfterTargets="_TSR_DI_AttributeCheck" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <DefineConstants>$([System.String]::Copy('$(DefineConstants)').Replace(';TSR_DI_NEED_INTERNAL_ATTRIBUTE', '').Replace('TSR_DI_NEED_INTERNAL_ATTRIBUTE;', '').Replace('TSR_DI_NEED_INTERNAL_ATTRIBUTE', ''))</DefineConstants>
+    </PropertyGroup>
+  </Target>
+
+</Project>

@@ -1,0 +1,180 @@
+using System.Collections.Immutable;
+using System.Text;
+using Tonono3.SKKEngine;
+
+namespace Tonono3.Tests;
+
+[TestClass]
+public sealed class RuntimeInfrastructureTests
+{
+    [TestMethod]
+    public void AppConfigComparisonDoesNotDependOnDictionaryInsertionOrder()
+    {
+        using var env = new TestEnvironment();
+        var first = env.CreateConfig();
+        var reversedRomaji = first.RomajiTable.Reverse().ToDictionary();
+        var second = first with { RomajiTable = reversedRomaji };
+
+        Assert.IsFalse(first.HasChange(second));
+    }
+
+    [TestMethod]
+    public void UserDictionaryWriterPersistsLatestQueuedSnapshotInBackground()
+    {
+        using var env = new TestEnvironment();
+        var path = env.PathFor("async-user.txt");
+        var logger = new DummyLogger();
+        var first = ImmutableDictionary<string, ImmutableArray<string>>.Empty
+            .Add("よみ", ["一"]);
+        var latest = first.SetItem("よみ", ["二", "一"]);
+
+        using (var writer = new UserDictionaryWriterFactory(logger.Log).Create(path))
+        {
+            writer.Enqueue(first);
+            writer.Enqueue(latest);
+        }
+
+        Assert.AreEqual(0, logger.Messages.Count);
+        StringAssert.Contains(File.ReadAllText(path, Encoding.UTF8), "よみ /二/一/");
+    }
+
+    [TestMethod]
+    public async Task ConfigWatcherDebouncesRepeatedNotificationsAndPublishesOnlyLatestGeneration()
+    {
+        using var env = new TestEnvironment();
+        var config = env.CreateConfig();
+        var dictionary = env.LoadDictionary(config);
+        var published = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reloadCount = 0;
+        using var watcher = new ConfigWatcher(
+            new TestConfigPathProvider(env.PathFor("watcher")),
+            new StubConfigLoader(() => config).Reload,
+            new StubDictionaryLoader((_, _) =>
+            {
+                Interlocked.Increment(ref reloadCount);
+                return dictionary;
+            }).Load,
+            new DummyLogger().Log);
+        watcher.RuntimeReloaded += (generation, _, _) => published.TrySetResult(generation);
+
+        UnsafeAccessors.ScheduleReload(watcher);
+        UnsafeAccessors.ScheduleReload(watcher);
+        UnsafeAccessors.ScheduleReload(watcher);
+
+        var generation = await published.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.AreEqual(3L, generation);
+        Assert.AreEqual(1, reloadCount);
+    }
+
+    [TestMethod]
+    public async Task ConfigWatcherKeepsLastGoodValueWhenReloadFails()
+    {
+        var callbackCount = 0;
+        using var env = new TestEnvironment();
+        var logger = new DummyLogger();
+        using var watcher = new ConfigWatcher(
+            new TestConfigPathProvider(env.PathFor("watcher")),
+            new StubConfigLoader(() => throw new InvalidDataException("invalid config")).Reload,
+            new StubDictionaryLoader((_, _) => throw new AssertFailedException("Dictionary must not load.")).Load,
+            logger.Log);
+        watcher.RuntimeReloaded += (_, _, _) => Interlocked.Increment(ref callbackCount);
+
+        UnsafeAccessors.ScheduleReload(watcher);
+        await Task.Delay(800);
+
+        Assert.AreEqual(0, callbackCount);
+        Assert.IsTrue(logger.Messages.Any(message => message.Contains("invalid config", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task ConfigWatcherDoesNotPublishAfterDispose()
+    {
+        using var env = new TestEnvironment();
+        var config = env.CreateConfig();
+        var dictionary = env.LoadDictionary(config);
+        var callbackCount = 0;
+        var watcher = new ConfigWatcher(
+            new TestConfigPathProvider(env.PathFor("watcher")),
+            new StubConfigLoader(() => config).Reload,
+            new StubDictionaryLoader((_, _) => dictionary).Load,
+            new DummyLogger().Log);
+        watcher.RuntimeReloaded += (_, _, _) => Interlocked.Increment(ref callbackCount);
+
+        UnsafeAccessors.ScheduleReload(watcher);
+        watcher.Dispose();
+        await Task.Delay(800);
+
+        Assert.AreEqual(0, callbackCount);
+    }
+
+    [TestMethod]
+    public void ControllerAppliesPendingRuntimeOnlyAtNextHandlerBoundary()
+    {
+        using var env = new TestEnvironment();
+        var first = env.CreateConfig(viCompatibleApps: ["first.exe"]);
+        var second = env.CreateConfig(viCompatibleApps: ["second.exe"]);
+        var firstDictionary = env.LoadDictionary(first);
+        var secondDictionary = env.LoadDictionary(second);
+        using var context = new ControllerTestContext(first, firstDictionary);
+        var controller = context.Controller;
+        controller.Start();
+
+        context.Watcher.Publish(1, second, secondDictionary);
+        Assert.AreSame(first, controller.CurrentConfig);
+
+        controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkLeft), null);
+        Assert.AreSame(second, controller.CurrentConfig);
+    }
+
+    [TestMethod]
+    public async Task ControllerSerializesConcurrentHandlersAndRejectsInputAfterDispose()
+    {
+        using var env = new TestEnvironment();
+        var config = env.CreateConfig();
+        var dictionary = env.LoadDictionary(config);
+        var context = new ControllerTestContext(config, dictionary);
+        var controller = context.Controller;
+        var tasks = Enumerable.Range(0, 50)
+            .Select(_ => Task.Run(() => controller.ProcessCommand(
+                TestEnvironment.Key(SkkKeyConstants.VkLeft), null)))
+            .ToArray();
+
+        await Task.WhenAll(tasks);
+        context.Dispose();
+
+        Assert.IsTrue(tasks.All(task => task.Result == false));
+        Assert.IsFalse(controller.ProcessCommand(
+            TestEnvironment.Key(SkkKeyConstants.VkJ, control: true), null));
+        Assert.AreEqual(1, context.Watcher.DisposeCount);
+        Assert.AreEqual(1, context.Hook.DisposeCount);
+        Assert.AreEqual(1, context.WriterFactory.Created.Single().Writer.DisposeCount);
+    }
+
+    [TestMethod]
+    public void ApplicationCoordinatorClosesOwnedGraphExactlyOnce()
+    {
+        using var env = new TestEnvironment();
+        var config = env.CreateConfig();
+        var context = new ControllerTestContext(config, env.LoadDictionary(config));
+        var ui = new FakeTononoUi();
+        var menu = new FakeSystemMenu();
+        var applicationControl = new FakeApplicationControl();
+        var coordinator = new ApplicationCoordinator(
+            context.Controller,
+            new FakeTononoUiFactory(ui).Create,
+            new FakeSystemMenuFactory(menu).Create,
+            applicationControl.Initialize,
+            new FakeWindowIconProvider().Load);
+
+        coordinator.Start(null);
+        coordinator.Dispose();
+        coordinator.Dispose();
+
+        Assert.AreEqual(1, applicationControl.InitializeCount);
+        Assert.AreEqual(1, ui.CloseCount);
+        Assert.AreEqual(1, menu.DisposeCount);
+        Assert.AreEqual(1, context.Watcher.DisposeCount);
+        Assert.AreEqual(1, context.Hook.DisposeCount);
+        Assert.AreEqual(1, context.WriterFactory.Created.Single().Writer.DisposeCount);
+    }
+}

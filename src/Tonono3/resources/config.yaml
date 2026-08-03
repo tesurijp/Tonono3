@@ -1,0 +1,71 @@
+dictionaryPaths: 
+  - ./skk-jisyo.l.gz
+  - ./skk-jisyo.jinmei.gz
+userDictionaryPath: ./user-jisyo.txt
+
+viCompatibleApps:
+  - vim.exe
+  - Code.exe
+  - devenv.exe
+  - obsidian.exe
+
+romajiTable:
+  vowel : aiueo
+  rows:
+    "": [あ,い,う,え,お]
+    k: [か,き,く,け,こ]
+    s: [さ,し,す,せ,そ]
+    t: [た,ち,つ,て,と]
+    n: [な,に,ぬ,ね,の]
+    h: [は,ひ,ふ,へ,ほ]
+    m: [ま,み,む,め,も]
+    y: [や,'',ゆ,'',よ]
+    r: [ら,り,る,れ,ろ]
+    w: [わ,'','','',を]
+    g: [が,ぎ,ぐ,げ,ご]
+    z: [ざ,じ,ず,ぜ,ぞ]
+    d: [だ,ぢ,づ,で,ど]
+    b: [ば,び,ぶ,べ,ぼ]
+    p: [ぱ,ぴ,ぷ,ぺ,ぽ]
+    x: [ぁ,ぃ,ぅ,ぇ,ぉ]
+    xy: [ゃ,'',ゅ,'',ょ]
+    f: [ふぁ,ふぃ,ふ,ふぇ,ふぉ]
+    ky: [きゃ,きぃ,きゅ,きぇ,きょ]
+    sh: [しゃ,し,しゅ,しぇ,しょ]
+    sy: [しゃ,しぃ,しゅ,しぇ,しょ]
+    ts: [つぁ,つぃ,つ,つぇ,つぉ]
+    ch: [ちゃ,ち,ちゅ,ちぇ,ちょ]
+    ty: [ちゃ,ちぃ,ちゅ,ちぇ,ちょ]
+    ny: [にゃ,にぃ,にゅ,にぇ,にょ]
+    hy: [ひゃ,ひぃ,ひゅ,ひぇ,ひょ]
+    my: [みゃ,みぃ,みゅ,みぇ,みょ]
+    ry: [りゃ,りぃ,りゅ,りぇ,りょ]
+    gy: [ぎゃ,ぎぃ,ぎゅ,ぎぇ,ぎょ]
+    j: [じゃ,じ,じゅ,じぇ,じょ]
+    by: [びゃ,びぃ,びゅ,びぇ,びょ]
+    py: [ぴゃ,ぴぃ,ぴゅ,ぴぇ,ぴょ]
+  irregular:
+    nn: ん
+    xtsu: っ
+    xtu: っ
+    vu: ヴ
+    ",": 、
+    ".": 。
+    "-": ー
+    "[": 「
+    "]": 」
+  moraModifier:
+    "っ" : [kk, ss, tt, hh, yy, rr, ww, gg, zz, dd, bb, pp, xx, ff, cc, jj]
+    "ん" : [nk, ns, nt, nh, nr, nw, ng, nz, nd, nb, np, nx, nf, nc, nj, nm, mm, mn]
+  moraAutoComplete:
+    "n" : "ん"
+
+zenkakuTable:
+  standard:
+    start: 0x0021
+    end: 0x007E
+    offset: 0xFEE0
+  irregular:
+    "\\": ＼
+    "~": "〜"
+    " ": "　"

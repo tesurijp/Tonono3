@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="NativeAot" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Project Path="src\Tonono3\Tonono3.csproj" />
+  <Project Path="src\Tonono3.SkkEngine\Tonono3.SkkEngine.fsproj" />
+  <Project Path="tests\Tonono3.Tests\Tonono3.Tests.csproj" />
+</Solution>

@@ -1,0 +1,52 @@
+namespace Tonono3.SKKEngine
+
+open System.Collections.Generic
+open System.Collections.Immutable
+open tsr_di
+
+[<AbstractClass; Sealed>]
+type SkkEngineFacade private () =
+    [<ServiceFunction(ServiceName = "CreateInitialState")>]
+    static member CreateInitialState() =
+        EngineState({ Input = Disabled; Registrations = [] })
+
+    [<ServiceFunction(ServiceName = "CreateKeyCommand")>]
+    static member CreateKeyCommand(vkCode: int, shift: bool, control: bool, ch: char) =
+        KeyCommand(vkCode, shift, control, ch)
+
+    [<ServiceFunction(ServiceName = "CreateConfig")>]
+    static member CreateConfig(
+        romaji: IReadOnlyDictionary<string,string>, mora: IReadOnlyDictionary<string,string>,
+        moraComplete: IReadOnlyDictionary<string,string>, zenkaku: IReadOnlyDictionary<char,string>,
+        viApps: string array) =
+        let toMap (source: IReadOnlyDictionary<'k,'v>) = source |> Seq.map (fun pair -> pair.Key, pair.Value) |> Map.ofSeq
+        EngineConfig(toMap romaji, toMap mora, toMap moraComplete, toMap zenkaku, viApps |> Seq.map (fun value -> value.ToLowerInvariant()) |> Set.ofSeq)
+
+    [<ServiceFunction(ServiceName = "CreateDictionary")>]
+    static member CreateDictionary(
+        main: ImmutableDictionary<string, ImmutableArray<string>>,
+        user: ImmutableDictionary<string, ImmutableArray<string>>) =
+        let toMap (source: ImmutableDictionary<string, ImmutableArray<string>>) =
+            source |> Seq.map (fun pair -> pair.Key, pair.Value |> Seq.toList) |> Map.ofSeq
+        DictionarySnapshot(toMap main, toMap user)
+
+    [<ServiceFunction(ServiceName = "ParseDictionaryLine")>]
+    static member ParseDictionaryLine(line: string) =
+        match Dictionary.parseLine line with
+        | Some(reading, candidates) -> ParsedDictionaryEntry(true, reading, List.toArray candidates)
+        | None -> ParsedDictionaryEntry(false, "", [||])
+
+    [<ServiceFunction(ServiceName = "GetCandidates")>]
+    static member GetCandidates(dictionary: DictionarySnapshot, reading: string) =
+        Dictionary.candidates reading dictionary |> List.toArray
+
+    [<ServiceFunction(ServiceName = "GetCompletions")>]
+    static member GetCompletions(dictionary: DictionarySnapshot, prefix: string) =
+        Dictionary.completions prefix dictionary |> List.toArray
+
+    [<ServiceFunction(ServiceName = "ProcessKey")>]
+    static member ProcessKey(state, config, dictionary, command, activeProcessPath: string) =
+        Engine.run state config dictionary command activeProcessPath
+
+    [<ServiceFunction(ServiceName = "CreateUiSnapshot")>]
+    static member CreateUiSnapshot(state) = Presentation.create state
