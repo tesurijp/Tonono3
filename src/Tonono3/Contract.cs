@@ -29,7 +29,7 @@ public interface IConfigWatcher : IDisposable
 
 public interface IKeyboardHook : IDisposable
 {
-    event Action<KeyInfo>? KeyIntercepted;
+    event Func<int, bool>? KeyIntercepted;
     void Install();
 }
 

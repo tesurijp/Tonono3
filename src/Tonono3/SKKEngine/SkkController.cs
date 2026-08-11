@@ -119,14 +119,12 @@ public sealed class SkkController : ISkkController
         }
     }
 
-    private void OnKeyIntercepted(KeyInfo e)
+    private bool OnKeyIntercepted(int keyCode)
     {
-        if (!e.IsKeyDown) return;
-
         var (controlPressed, shiftPressed) = getMetaKeyState();
-        var ch = convertVirtualKeyToChar(e.VirtualKeyCode, shiftPressed);
-        var command = createKeyCommand(e.VirtualKeyCode, shiftPressed, controlPressed, ch);
-        e.Handled = ProcessCommand(command, getActiveProcessPath());
+        var ch = convertVirtualKeyToChar(keyCode, shiftPressed);
+        var command = createKeyCommand(keyCode, shiftPressed, controlPressed, ch);
+        return ProcessCommand(command, getActiveProcessPath());
     }
 
     public bool ProcessCommand(KeyCommand command, string? activeProcessPath)
