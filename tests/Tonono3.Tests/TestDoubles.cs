@@ -76,13 +76,13 @@ internal sealed class FakeConfigWatcher : IConfigWatcher
 
 internal sealed class FakeKeyboardHook : IKeyboardHook
 {
-    public event Action<KeyInfo>? KeyIntercepted;
+    public event Func<int, bool>? KeyIntercepted;
     internal int InstallCount { get; private set; }
     internal int DisposeCount { get; private set; }
 
     public void Install() => InstallCount++;
     public void Dispose() => DisposeCount++;
-    internal void Publish(KeyInfo value) => KeyIntercepted?.Invoke(value);
+    internal bool? Publish(int value) => KeyIntercepted?.Invoke(value);
 }
 
 internal sealed class FakeKeyboardInput
