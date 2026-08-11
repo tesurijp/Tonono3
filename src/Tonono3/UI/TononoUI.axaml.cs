@@ -14,12 +14,6 @@ public partial class TononoUI : Window, ITononoUi
     private readonly ISetNonActiveWindow setNonActiveWindow;
     private bool nativeStyleApplied;
     private long appliedVersion = -1;
-    private TextBlock statusTextBlock = null!;
-    private StackPanel registrationPanel = null!;
-    private TextBlock registrationReadingTextBlock = null!;
-    private TextBlock registrationWordTextBlock = null!;
-    private TextBlock compositionTextBlock = null!;
-    private TextBlock candidateListTextBlock = null!;
 
     public TononoUI(
         IGetTargetWindowPosition getTargetWindowPosition,
@@ -28,12 +22,6 @@ public partial class TononoUI : Window, ITononoUi
         this.getTargetWindowPosition = getTargetWindowPosition;
         this.setNonActiveWindow = setNonActiveWindow;
         InitializeComponent();
-        statusTextBlock = this.FindControl<TextBlock>("StatusTextBlock")!;
-        registrationPanel = this.FindControl<StackPanel>("RegistrationPanel")!;
-        registrationReadingTextBlock = this.FindControl<TextBlock>("RegistrationReadingTextBlock")!;
-        registrationWordTextBlock = this.FindControl<TextBlock>("RegistrationWordTextBlock")!;
-        compositionTextBlock = this.FindControl<TextBlock>("CompositionTextBlock")!;
-        candidateListTextBlock = this.FindControl<TextBlock>("CandidateListTextBlock")!;
 
         Opened += (_, _) =>
         {
@@ -47,20 +35,18 @@ public partial class TononoUI : Window, ITononoUi
         };
     }
 
-    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
-
     public void ApplySnapshot(SkkUiSnapshot snapshot)
     {
         Dispatcher.UIThread.Post(() =>
         {
             if (snapshot.Version < appliedVersion) return;
             appliedVersion = snapshot.Version;
-            statusTextBlock.Text = snapshot.StatusText;
-            registrationPanel.IsVisible = snapshot.IsInRegistrationMode;
-            registrationReadingTextBlock.Text = snapshot.RegistrationReading;
-            registrationWordTextBlock.Text = snapshot.RegistrationWord;
-            compositionTextBlock.Text = snapshot.Composition;
-            candidateListTextBlock.Text = snapshot.CandidateList;
+            StatusTextBlock.Text = snapshot.StatusText;
+            RegistrationPanel.IsVisible = snapshot.IsInRegistrationMode;
+            RegistrationReadingTextBlock.Text = snapshot.RegistrationReading;
+            RegistrationWordTextBlock.Text = snapshot.RegistrationWord;
+            CompositionTextBlock.Text = snapshot.Composition;
+            CandidateListTextBlock.Text = snapshot.CandidateList;
 
             if (snapshot.IsVisible)
             {
