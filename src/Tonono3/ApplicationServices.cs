@@ -6,10 +6,8 @@ using tsr_di;
 
 namespace Tonono3;
 
-public interface IApplicationControl;
-
 [ServiceClass(Lifetime = Lifetime.Scoped)]
-public sealed class ApplicationControl(IWriteLog writeLog) : IApplicationControl
+public sealed class ApplicationControl(IWriteLog writeLog)
 {
     private IControlledApplicationLifetime? lifetime;
 

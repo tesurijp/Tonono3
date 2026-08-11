@@ -71,10 +71,8 @@ internal sealed class UserDictionaryWriter : IUserDictionaryWriter
     }
 }
 
-public interface IUserDictionaryWriterFactory;
-
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class UserDictionaryWriterFactory(IWriteLog writeLog) : IUserDictionaryWriterFactory
+public sealed class UserDictionaryWriterFactory(IWriteLog writeLog) 
 {
     [ServiceFunction(ServiceName = "CreateUserDictionaryWriter")]
     public IUserDictionaryWriter Create(string path) => new UserDictionaryWriter(path, writeLog);

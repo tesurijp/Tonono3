@@ -7,12 +7,10 @@ using tsr_di;
 
 namespace Tonono3.UI;
 
-public interface IConfigFileLauncher;
-
 [ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class ConfigFileLauncher(
     IConfigPathProvider paths,
-    IWriteLog writeLog) : IConfigFileLauncher
+    IWriteLog writeLog) 
 {
     [ServiceFunction(ServiceName = "OpenConfigFile")]
     public void Open()
@@ -38,12 +36,10 @@ public static class WindowIconProvider
     }
 }
 
-public interface IInfoWindowFactory;
-
 [ServiceClass(Lifetime = Lifetime.Scoped)]
 public sealed class InfoWindowFactory(
     ILoadWindowIcon loadWindowIcon,
-    IConfigPathProvider paths) : IInfoWindowFactory
+    IConfigPathProvider paths)
 {
     [ServiceFunction(ServiceName = "CreateInfoWindow")]
     public Window Create(AppConfig config) => new InfoWindow
@@ -53,18 +49,14 @@ public sealed class InfoWindowFactory(
     };
 }
 
-public interface ITononoUiFactory;
-
 [ServiceClass(Lifetime = Lifetime.Scoped)]
 public sealed class TononoUiFactory(
     IGetTargetWindowPosition getTargetWindowPosition,
-    ISetNonActiveWindow setNonActiveWindow) : ITononoUiFactory
+    ISetNonActiveWindow setNonActiveWindow)
 {
     [ServiceFunction(ServiceName = "CreateTononoUi")]
     public ITononoUi Create() => new TononoUI(getTargetWindowPosition, setNonActiveWindow);
 }
-
-public interface ISystemMenuFactory;
 
 [ServiceClass(Lifetime = Lifetime.Scoped)]
 public sealed class SystemMenuFactory(
@@ -73,7 +65,7 @@ public sealed class SystemMenuFactory(
     ISkkController controller,
     IOpenConfigFile openConfigFile,
     ICreateInfoWindow createInfoWindow,
-    ILoadWindowIcon loadWindowIcon) : ISystemMenuFactory
+    ILoadWindowIcon loadWindowIcon)
 {
     [ServiceFunction(ServiceName = "CreateSystemMenu")]
     public ISystemMenu Create() => new SystemMenu(

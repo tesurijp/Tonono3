@@ -9,9 +9,8 @@ using VYaml.Serialization;
 
 namespace Tonono3;
 
-public interface IConfigLoader;
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class ConfigLoader(IConfigPathProvider paths, IWriteLog writeLog) : IConfigLoader
+public sealed class ConfigLoader(IConfigPathProvider paths, IWriteLog writeLog)
 {
     private readonly YamlSerializerOptions serializerOptions = CreateSerializerOptions();
 

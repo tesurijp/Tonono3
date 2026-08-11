@@ -10,10 +10,8 @@ using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
-public interface ISkkDictionaryLoader;
-
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class SkkDicManager(IParseDictionaryLine parseDictionaryLine) : ISkkDictionaryLoader
+public sealed class SkkDicManager(IParseDictionaryLine parseDictionaryLine)
 {
     static SkkDicManager() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
