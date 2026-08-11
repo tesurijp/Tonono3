@@ -111,13 +111,13 @@ public sealed class ConfigWatcher(
             {
                 throw new FileNotFoundException("The active config file does not exist.", expectedConfigPath);
             }
-            var runtime = await Task.Run(LoadRuntime, token).ConfigureAwait(false);
+            var (conf, dict) = await Task.Run(LoadRuntime, token).ConfigureAwait(false);
             lock (gate)
             {
                 if (disposed || token.IsCancellationRequested || scheduledGeneration != generation) return;
                 if (systemWatcher is not null) activeConfigPath = Path.GetFullPath(paths.ConfigPath);
             }
-            RuntimeReloaded?.Invoke(scheduledGeneration, runtime.Config, runtime.Dictionary);
+            RuntimeReloaded?.Invoke(scheduledGeneration, conf, dict);
             writeLog("config.yaml update success.");
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -151,8 +151,7 @@ public sealed class ConfigWatcher(
 
     private static void DisposeWatcher(FileSystemWatcher? watcher)
     {
-        if (watcher is null) return;
-        watcher.EnableRaisingEvents = false;
-        watcher.Dispose();
+        watcher?.EnableRaisingEvents = false;
+        watcher?.Dispose();
     }
 }
