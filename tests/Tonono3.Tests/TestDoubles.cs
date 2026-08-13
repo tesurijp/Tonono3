@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Tonono3.AutoDefined;
 using Tonono3.SKKEngine;
-using Tonono3.Win32;
 
 namespace Tonono3.Tests;
 
@@ -76,13 +75,17 @@ internal sealed class FakeConfigWatcher : IConfigWatcher
 
 internal sealed class FakeKeyboardHook : IKeyboardHook
 {
-    public event Func<int, bool>? KeyIntercepted;
+    internal Func<int, bool>? func;
     internal int InstallCount { get; private set; }
     internal int DisposeCount { get; private set; }
 
-    public void Install() => InstallCount++;
+    public void Install(Func<int, bool> KeyIntercepted)
+    {
+        func = KeyIntercepted;
+        InstallCount++;
+    }
     public void Dispose() => DisposeCount++;
-    internal bool? Publish(int value) => KeyIntercepted?.Invoke(value);
+    internal bool? Publish(int value) => func?.Invoke(value);
 }
 
 internal sealed class FakeKeyboardInput

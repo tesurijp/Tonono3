@@ -7,5 +7,4 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Globalization", "CA1304")]
 [assembly: SuppressMessage("Globalization", "CA1311")]
-[assembly: SuppressMessage("Interoperability", "SYSLIB1054")]
 [assembly: SuppressMessage("Style", "IDE0130")]

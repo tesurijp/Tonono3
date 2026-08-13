@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using Tonono3.AutoDefined;
-using Tonono3.Win32;
 using tsr_di;
 
 namespace Tonono3.SKKEngine;
@@ -97,11 +96,10 @@ public sealed class SkkController : ISkkController
             if (started || disposed) return;
             started = true;
             configWatcher.RuntimeReloaded += OnRuntimeReloaded;
-            hook.KeyIntercepted += OnKeyIntercepted;
         }
 
         configWatcher.Start();
-        hook.Install();
+        hook.Install(OnKeyIntercepted);
     }
 
     private void OnRuntimeReloaded(
@@ -122,7 +120,9 @@ public sealed class SkkController : ISkkController
     private bool OnKeyIntercepted(int keyCode)
     {
         var (controlPressed, shiftPressed) = getMetaKeyState();
-        var ch = convertVirtualKeyToChar(keyCode, shiftPressed);
+
+        var ch = keyCode == SkkKeyConstants.VkG && controlPressed ? '\0' :
+            convertVirtualKeyToChar(keyCode, shiftPressed);
         var command = createKeyCommand(keyCode, shiftPressed, controlPressed, ch);
         return ProcessCommand(command, getActiveProcessPath());
     }
@@ -198,7 +198,6 @@ public sealed class SkkController : ISkkController
             if (disposed) return;
             disposed = true;
             configWatcher.RuntimeReloaded -= OnRuntimeReloaded;
-            hook.KeyIntercepted -= OnKeyIntercepted;
             UiUpdated = null;
         }
 

@@ -64,8 +64,13 @@ public partial class TononoUI : Window, ITononoUi
     private void ApplyNativeWindowStyles()
     {
         if (nativeStyleApplied) return;
-        setNonActiveWindow(this);
-        nativeStyleApplied = true;
+
+        var handle = TryGetPlatformHandle();
+        if (handle != null)
+        {
+            setNonActiveWindow(handle.Handle);
+            nativeStyleApplied = true;
+        }
     }
 
     private void UpdatePosition()

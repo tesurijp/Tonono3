@@ -3,10 +3,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using System;
 using System.Collections.Immutable;
 using Tonono3.SKKEngine;
-using Tonono3.Win32;
 
 namespace Tonono3;
-
 public interface IConfigPathProvider
 {
     string ConfigFileName { get; }
@@ -29,8 +27,7 @@ public interface IConfigWatcher : IDisposable
 
 public interface IKeyboardHook : IDisposable
 {
-    event Func<int, bool>? KeyIntercepted;
-    void Install();
+    void Install(Func<int, bool> KeyIntercepted);
 }
 
 public interface ISkkController : IDisposable

@@ -5,7 +5,6 @@
     <Configurations>Debug;Release;NativeAot</Configurations>
     <AssemblyName>Tonono3</AssemblyName>
     <RootNamespace>Tonono3</RootNamespace>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -29,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tonono3.SkkEngine\Tonono3.SkkEngine.fsproj" />
+    <ProjectReference Include="..\Tonono3.Interop\Tonono3.Interop.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,7 +40,6 @@
     <PackageReference Include="tsr-di" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="tsr-di.Attribute" Version="1.*" />
     <PackageReference Include="VYaml" Version="1.4.0" />
-    <PackageReference Include="FSharp.Core" Version="10.1.302" />
   </ItemGroup>
 
   <ItemGroup>
