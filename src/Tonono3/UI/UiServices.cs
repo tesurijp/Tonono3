@@ -8,12 +8,31 @@ using tsr_di;
 namespace Tonono3.UI;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class ConfigFileLauncher(
+public sealed class UiFactory(
     IConfigPathProvider paths,
-    IWriteLog writeLog) 
+    GetTargetWindowPositionFunc getTargetWindowPosition,
+    SetNonActiveWindowFunc setNonActiveWindow,
+    RestartApplicationFunc restart,
+    ShutdownApplicationFunc shutdown,
+    ISkkController controller,
+    WriteLogFunc writeLog)
 {
-    [ServiceFunction(ServiceName = "OpenConfigFile")]
-    public void Open()
+    static UiFactory()
+    {
+        using var stream = AssetLoader.Open(new Uri("avares://Tonono3/TONONO.ICO"));
+        icon = new WindowIcon(stream);
+    }
+    private static readonly WindowIcon icon;
+    [ServiceFunction]
+    public Window CreateInfoWindow(AppConfig config) => new InfoWindow { Icon = icon, DataContext = new InfoViewModel(config, paths.ConfigPath) };
+    [ServiceFunction]
+    public ITononoUi CreateTononoUi() => new TononoUI(getTargetWindowPosition, setNonActiveWindow) { Icon = icon };
+
+    [ServiceFunction]
+    public ISystemMenu CreateSystemMenu() => new SystemMenu(restart, shutdown, controller, OpenConfigFile, CreateInfoWindow, icon);
+
+    [ServiceFunction]
+    public void OpenConfigFile()
     {
         try
         {
@@ -24,55 +43,4 @@ public sealed class ConfigFileLauncher(
             writeLog($"Failed to open config.yaml: {ex.Message}");
         }
     }
-}
-
-public static class WindowIconProvider
-{
-    [ServiceFunction(ServiceName = "LoadWindowIcon")]
-    public static WindowIcon Load()
-    {
-        using var stream = AssetLoader.Open(new Uri("avares://Tonono3/TONONO.ICO"));
-        return new WindowIcon(stream);
-    }
-}
-
-[ServiceClass(Lifetime = Lifetime.Scoped)]
-public sealed class InfoWindowFactory(
-    ILoadWindowIcon loadWindowIcon,
-    IConfigPathProvider paths)
-{
-    [ServiceFunction(ServiceName = "CreateInfoWindow")]
-    public Window Create(AppConfig config) => new InfoWindow
-    {
-        Icon = loadWindowIcon(),
-        DataContext = new InfoViewModel(config, paths.ConfigPath)
-    };
-}
-
-[ServiceClass(Lifetime = Lifetime.Scoped)]
-public sealed class TononoUiFactory(
-    IGetTargetWindowPosition getTargetWindowPosition,
-    ISetNonActiveWindow setNonActiveWindow)
-{
-    [ServiceFunction(ServiceName = "CreateTononoUi")]
-    public ITononoUi Create() => new TononoUI(getTargetWindowPosition, setNonActiveWindow);
-}
-
-[ServiceClass(Lifetime = Lifetime.Scoped)]
-public sealed class SystemMenuFactory(
-    IRestartApplication restartApplication,
-    IShutdownApplication shutdownApplication,
-    ISkkController controller,
-    IOpenConfigFile openConfigFile,
-    ICreateInfoWindow createInfoWindow,
-    ILoadWindowIcon loadWindowIcon)
-{
-    [ServiceFunction(ServiceName = "CreateSystemMenu")]
-    public ISystemMenu Create() => new SystemMenu(
-        restartApplication,
-        shutdownApplication,
-        controller,
-        openConfigFile,
-        createInfoWindow,
-        loadWindowIcon);
 }

@@ -10,7 +10,7 @@ using VYaml.Serialization;
 namespace Tonono3;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class ConfigLoader(IConfigPathProvider paths, IWriteLog writeLog)
+public sealed class ConfigLoader(IConfigPathProvider paths, WriteLogFunc writeLog)
 {
     private readonly YamlSerializerOptions serializerOptions = CreateSerializerOptions();
 
@@ -33,7 +33,7 @@ public sealed class ConfigLoader(IConfigPathProvider paths, IWriteLog writeLog)
         };
     }
 
-    [ServiceFunction(ServiceName = "ReloadConfig")]
+    [ServiceFunction(ServiceName = "ReloadConfigFunc")]
     public AppConfig Reload()
     {
         writeLog($"Loading config from: {paths.ConfigPath}");

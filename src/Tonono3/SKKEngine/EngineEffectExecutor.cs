@@ -4,9 +4,9 @@ using tsr_di;
 namespace Tonono3.SKKEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class EngineEffectExecutor(ISendText sendText, IWriteLog writeLog) 
+public sealed class EngineEffectExecutor(SendTextFunc sendText, WriteLogFunc writeLog) 
 {
-    [ServiceFunction(ServiceName = "ExecuteEngineEffects")]
+    [ServiceFunction(ServiceName = "ExecuteEngineEffectsFunc")]
     public void Execute(TransitionResult result, IUserDictionaryWriter dictionaryWriter)
     {
         foreach (var effect in result.Effects)

@@ -8,12 +8,12 @@ using tsr_di;
 
 namespace Tonono3;
 
-[ServiceClass(Lifetime = Lifetime.Scoped)]
+[ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class ConfigWatcher(
     IConfigPathProvider paths,
-    IReloadConfig reloadConfig,
-    ILoadSkkDictionary loadSkkDictionary,
-    IWriteLog writeLog) : IConfigWatcher
+    ReloadConfigFunc reloadConfig,
+    LoadSkkDictionaryFunc loadSkkDictionary,
+    WriteLogFunc writeLog) : IConfigWatcher
 {
     private readonly Lock gate = new();
     private readonly TimeSpan debounceDelay = TimeSpan.FromMilliseconds(400);

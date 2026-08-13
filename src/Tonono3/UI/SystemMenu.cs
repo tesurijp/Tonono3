@@ -9,25 +9,25 @@ public sealed class SystemMenu : ISystemMenu
     private readonly TrayIcon trayicon;
     private Window? infoWindow;
     private readonly ISkkController controller;
-    private readonly ICreateInfoWindow createInfoWindow;
+    private readonly CreateInfoWindowFunc createInfoWindow;
 
     public SystemMenu(
-        IRestartApplication restartApplication,
-        IShutdownApplication shutdownApplication,
+        RestartApplicationFunc restart,
+        ShutdownApplicationFunc shutdown,
         ISkkController controller,
-        IOpenConfigFile openConfigFile,
-        ICreateInfoWindow createInfoWindow,
-        ILoadWindowIcon loadWindowIcon)
+        OpenConfigFileFunc openConfigFile,
+        CreateInfoWindowFunc createInfoWindow,
+        WindowIcon appIcon)
     {
         this.controller = controller;
         this.createInfoWindow = createInfoWindow;
         trayicon = new TrayIcon
         {
-            Icon = loadWindowIcon(),
+            Icon = appIcon,
             ToolTipText = "Tonono",
             Menu = CreateMenu(
-                () => restartApplication(),
-                () => shutdownApplication(),
+                () => restart(),
+                () => shutdown(),
                 () => openConfigFile()),
             IsVisible = true
         };

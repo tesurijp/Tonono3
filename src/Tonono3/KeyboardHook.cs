@@ -4,8 +4,8 @@ using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
-[ServiceClass(Lifetime = Lifetime.Scoped)]
-public sealed class KeyboardHook(IWriteLog writeLog, IInstallHook installHook ) : IKeyboardHook
+[ServiceClass(Lifetime = Lifetime.Singleton)]
+public sealed class KeyboardHook(WriteLogFunc writeLog, InstallHookFunc installHook ) : IKeyboardHook
 {
     private IDisposable? keyHandler;
     public void Install(Func<int, bool > KeyIntercepted)

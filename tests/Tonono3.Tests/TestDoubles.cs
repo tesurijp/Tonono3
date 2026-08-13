@@ -8,15 +8,15 @@ namespace Tonono3.Tests;
 
 internal static class EngineFunctions
 {
-    internal static readonly ICreateInitialState CreateInitialState = SkkEngineFacade.CreateInitialState;
-    internal static readonly ICreateKeyCommand CreateKeyCommand = SkkEngineFacade.CreateKeyCommand;
-    internal static readonly ICreateConfig CreateConfig = SkkEngineFacade.CreateConfig;
-    internal static readonly ICreateDictionary CreateDictionary = SkkEngineFacade.CreateDictionary;
-    internal static readonly IParseDictionaryLine ParseDictionaryLine = SkkEngineFacade.ParseDictionaryLine;
-    internal static readonly IGetCandidates GetCandidates = SkkEngineFacade.GetCandidates;
-    internal static readonly IGetCompletions GetCompletions = SkkEngineFacade.GetCompletions;
-    internal static readonly IProcessKey ProcessKey = SkkEngineFacade.ProcessKey;
-    internal static readonly ICreateUiSnapshot CreateUiSnapshot = SkkEngineFacade.CreateUiSnapshot;
+    internal static readonly CreateInitialStateFunc CreateInitialState = SkkEngineFacade.CreateInitialState;
+    internal static readonly CreateKeyCommandFunc CreateKeyCommand = SkkEngineFacade.CreateKeyCommand;
+    internal static readonly CreateConfigFunc CreateConfig = SkkEngineFacade.CreateConfig;
+    internal static readonly CreateDictionaryFunc CreateDictionary = SkkEngineFacade.CreateDictionary;
+    internal static readonly ParseDictionaryLineFunc ParseDictionaryLine = SkkEngineFacade.ParseDictionaryLine;
+    internal static readonly GetCandidatesFunc GetCandidates = SkkEngineFacade.GetCandidates;
+    internal static readonly GetCompletionsFunc GetCompletions = SkkEngineFacade.GetCompletions;
+    internal static readonly ProcessKeyFunc ProcessKey = SkkEngineFacade.ProcessKey;
+    internal static readonly CreateUiSnapshotFunc CreateUiSnapshot = SkkEngineFacade.CreateUiSnapshot;
 }
 
 internal sealed class DummyLogger

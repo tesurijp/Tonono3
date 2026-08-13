@@ -51,10 +51,6 @@
     <FilesToDownload Include="SKK-JISYO.jinmei.gz" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Config\" />
-  </ItemGroup>
-
   <Target Name="DownloadRequiredFiles" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
     <PropertyGroup>
       <BaseUrl>https://skk-dev.github.io/dict/</BaseUrl>

@@ -188,11 +188,11 @@ public sealed class SkkEngineTests
 
         public Runner(
             AppConfig source,
-            IParseDictionaryLine parseDictionaryLine,
-            ICreateInitialState createInitialState,
-            ICreateConfig createConfig,
-            ICreateDictionary createDictionary,
-            IProcessKey processKey)
+            ParseDictionaryLineFunc parseDictionaryLine,
+            CreateInitialStateFunc createInitialState,
+            CreateConfigFunc createConfig,
+            CreateDictionaryFunc createDictionary,
+            ProcessKeyFunc processKey)
         {
             var snapshot = new SkkDicManager(parseDictionaryLine)
                 .Load(source.DictionaryPaths, source.UserDictionaryPath);
@@ -204,7 +204,7 @@ public sealed class SkkEngineTests
             this.processKey = processKey;
         }
 
-        private readonly IProcessKey processKey;
+        private readonly ProcessKeyFunc processKey;
 
         public EngineState State { get; private set; }
 

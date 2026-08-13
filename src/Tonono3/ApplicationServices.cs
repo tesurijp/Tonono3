@@ -6,15 +6,15 @@ using tsr_di;
 
 namespace Tonono3;
 
-[ServiceClass(Lifetime = Lifetime.Scoped)]
-public sealed class ApplicationControl(IWriteLog writeLog)
+[ServiceClass(Lifetime = Lifetime.Singleton)]
+public sealed class ApplicationControl(WriteLogFunc writeLog)
 {
     private IControlledApplicationLifetime? lifetime;
 
-    [ServiceFunction(ServiceName = "InitializeApplicationLifetime")]
+    [ServiceFunction(ServiceName = "InitializeApplicationLifetimeFunc")]
     public void Initialize(IControlledApplicationLifetime? lifetime) => this.lifetime = lifetime;
 
-    [ServiceFunction(ServiceName = "RestartApplication")]
+    [ServiceFunction(ServiceName = "RestartApplicationFunc")]
     public void Restart()
     {
         try
@@ -37,17 +37,16 @@ public sealed class ApplicationControl(IWriteLog writeLog)
         Shutdown();
     }
 
-    [ServiceFunction(ServiceName = "ShutdownApplication")]
+    [ServiceFunction(ServiceName = "ShutdownApplicationFunc")]
     public void Shutdown() => lifetime?.Shutdown();
 }
 
-[ServiceClass(Lifetime = Lifetime.Scoped)]
+[ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class ApplicationCoordinator(
     ISkkController controller,
-    ICreateTononoUi createTononoUi,
-    ICreateSystemMenu createSystemMenu,
-    IInitializeApplicationLifetime initializeApplicationLifetime,
-    ILoadWindowIcon loadWindowIcon) : IApplicationCoordinator
+    CreateTononoUiFunc createTononoUi,
+    CreateSystemMenuFunc createSystemMenu,
+    InitializeApplicationLifetimeFunc initializeApplicationLifetime) : IApplicationCoordinator
 {
     private ITononoUi? ui;
     private ISystemMenu? menu;
@@ -59,7 +58,6 @@ public sealed class ApplicationCoordinator(
         initializeApplicationLifetime(controlledLifetime);
 
         ui = createTononoUi();
-        ui.Icon = loadWindowIcon();
         controller.UiUpdated += ui.ApplySnapshot;
         menu = createSystemMenu();
         controller.Start();

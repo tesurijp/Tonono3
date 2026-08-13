@@ -5,22 +5,22 @@ using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
-[ServiceClass(Lifetime = Lifetime.Scoped)]
+[ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class SkkController : ISkkController
 {
     private readonly Lock gate = new();
-    private readonly ICreateUserDictionaryWriter createUserDictionaryWriter;
+    private readonly CreateUserDictionaryWriterFunc createUserDictionaryWriter;
     private readonly IConfigWatcher configWatcher;
     private readonly IKeyboardHook hook;
-    private readonly IGetMetaKeyState getMetaKeyState;
-    private readonly IConvertVirtualKeyToChar convertVirtualKeyToChar;
-    private readonly IGetActiveProcessPath getActiveProcessPath;
-    private readonly IExecuteEngineEffects executeEngineEffects;
-    private readonly ICreateKeyCommand createKeyCommand;
-    private readonly ICreateConfig createConfig;
-    private readonly ICreateDictionary createDictionary;
-    private readonly IProcessKey processKey;
-    private readonly ICreateUiSnapshot createUiSnapshot;
+    private readonly GetMetaKeyStateFunc getMetaKeyState;
+    private readonly ConvertVirtualKeyToCharFunc convertVirtualKeyToChar;
+    private readonly GetActiveProcessPathFunc getActiveProcessPath;
+    private readonly ExecuteEngineEffectsFunc executeEngineEffects;
+    private readonly CreateKeyCommandFunc createKeyCommand;
+    private readonly CreateConfigFunc createConfig;
+    private readonly CreateDictionaryFunc createDictionary;
+    private readonly ProcessKeyFunc processKey;
+    private readonly CreateUiSnapshotFunc createUiSnapshot;
     private EngineState currentState;
     private DictionarySnapshot currentDictionary;
     private EngineConfig currentEngineConfig;
@@ -32,21 +32,21 @@ public sealed class SkkController : ISkkController
     private long uiVersion;
 
     public SkkController(
-        IReloadConfig reloadConfig,
-        ILoadSkkDictionary loadSkkDictionary,
-        ICreateUserDictionaryWriter createUserDictionaryWriter,
+        ReloadConfigFunc reloadConfig,
+        LoadSkkDictionaryFunc loadSkkDictionary,
+        CreateUserDictionaryWriterFunc createUserDictionaryWriter,
         IConfigWatcher configWatcher,
         IKeyboardHook hook,
-        IGetMetaKeyState getMetaKeyState,
-        IConvertVirtualKeyToChar convertVirtualKeyToChar,
-        IGetActiveProcessPath getActiveProcessPath,
-        IExecuteEngineEffects executeEngineEffects,
-        ICreateInitialState createInitialState,
-        ICreateKeyCommand createKeyCommand,
-        ICreateConfig createConfig,
-        ICreateDictionary createDictionary,
-        IProcessKey processKey,
-        ICreateUiSnapshot createUiSnapshot)
+        GetMetaKeyStateFunc getMetaKeyState,
+        ConvertVirtualKeyToCharFunc convertVirtualKeyToChar,
+        GetActiveProcessPathFunc getActiveProcessPath,
+        ExecuteEngineEffectsFunc executeEngineEffects,
+        CreateInitialStateFunc createInitialState,
+        CreateKeyCommandFunc createKeyCommand,
+        CreateConfigFunc createConfig,
+        CreateDictionaryFunc createDictionary,
+        ProcessKeyFunc processKey,
+        CreateUiSnapshotFunc createUiSnapshot)
     {
         this.createUserDictionaryWriter = createUserDictionaryWriter;
         this.configWatcher = configWatcher;

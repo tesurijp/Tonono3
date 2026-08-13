@@ -11,11 +11,11 @@ using tsr_di;
 namespace Tonono3.SKKEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class SkkDicManager(IParseDictionaryLine parseDictionaryLine)
+public sealed class SkkDicManager(ParseDictionaryLineFunc parseDictionaryLine)
 {
     static SkkDicManager() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-    [ServiceFunction(ServiceName = "LoadSkkDictionary")]
+    [ServiceFunction(ServiceName = "LoadSkkDictionaryFunc")]
     public SkkDictionarySnapshot Load(IEnumerable<string> mainPaths, string userPath) =>
         new(LoadMainDictionaries(mainPaths), LoadUserDictionary(userPath));
 
@@ -36,7 +36,6 @@ public sealed class SkkDicManager(IParseDictionaryLine parseDictionaryLine)
             ? new GZipStream(fileStream, CompressionMode.Decompress)
             : fileStream;
 
-        // Read into memory to handle encoding detection
         using var memoryStream = new MemoryStream();
         inputStream.CopyTo(memoryStream);
         return memoryStream.ToArray();
@@ -69,14 +68,11 @@ public sealed class SkkDicManager(IParseDictionaryLine parseDictionaryLine)
 
     private static Encoding DetectEncoding(byte[] buffer)
     {
-        // Simple heuristic for SKK dictionaries: usually EUC-JP or UTF-8.
-        // If it has UTF-8 BOM, it's UTF-8.
         if (buffer.Length >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF)
         {
             return Encoding.UTF8;
         }
 
-        // Try to see if it's valid UTF-8
         try
         {
             var utf8 = new UTF8Encoding(false, true);
@@ -85,7 +81,6 @@ public sealed class SkkDicManager(IParseDictionaryLine parseDictionaryLine)
         }
         catch (ArgumentException)
         {
-            // Fallback to EUC-JP
             return Encoding.GetEncoding("euc-jp");
         }
     }

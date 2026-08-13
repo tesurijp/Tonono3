@@ -10,14 +10,14 @@ namespace Tonono3.UI;
 
 public partial class TononoUI : Window, ITononoUi
 {
-    private readonly IGetTargetWindowPosition getTargetWindowPosition;
-    private readonly ISetNonActiveWindow setNonActiveWindow;
+    private readonly GetTargetWindowPositionFunc getTargetWindowPosition;
+    private readonly SetNonActiveWindowFunc setNonActiveWindow;
     private bool nativeStyleApplied;
     private long appliedVersion = -1;
 
     public TononoUI(
-        IGetTargetWindowPosition getTargetWindowPosition,
-        ISetNonActiveWindow setNonActiveWindow)
+        GetTargetWindowPositionFunc getTargetWindowPosition,
+        SetNonActiveWindowFunc setNonActiveWindow)
     {
         this.getTargetWindowPosition = getTargetWindowPosition;
         this.setNonActiveWindow = setNonActiveWindow;

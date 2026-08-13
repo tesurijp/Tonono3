@@ -13,12 +13,12 @@ namespace Tonono3.SKKEngine;
 internal sealed class UserDictionaryWriter : IUserDictionaryWriter
 {
     private readonly string path;
-    private readonly IWriteLog writeLog;
+    private readonly WriteLogFunc writeLog;
     private readonly Channel<ImmutableDictionary<string, ImmutableArray<string>>> channel;
     private readonly Task writerTask;
     private bool disposed;
 
-    internal UserDictionaryWriter(string path, IWriteLog writeLog)
+    internal UserDictionaryWriter(string path, WriteLogFunc writeLog)
     {
         this.path = path;
         this.writeLog = writeLog;
@@ -72,8 +72,8 @@ internal sealed class UserDictionaryWriter : IUserDictionaryWriter
 }
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class UserDictionaryWriterFactory(IWriteLog writeLog) 
+public sealed class UserDictionaryWriterFactory(WriteLogFunc writeLog) 
 {
-    [ServiceFunction(ServiceName = "CreateUserDictionaryWriter")]
+    [ServiceFunction(ServiceName = "CreateUserDictionaryWriterFunc")]
     public IUserDictionaryWriter Create(string path) => new UserDictionaryWriter(path, writeLog);
 }
