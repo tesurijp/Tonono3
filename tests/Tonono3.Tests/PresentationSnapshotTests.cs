@@ -49,7 +49,7 @@ public sealed class PresentationSnapshotTests
         Assert.AreEqual("inner", snapshot.RegistrationReading);
         Assert.AreEqual("内", snapshot.RegistrationWord);
         Assert.AreEqual("▼", snapshot.Composition);
-        StringAssert.Contains(snapshot.CandidateList, "[J] : 五");
+        Assert.Contains("[J] : 五", snapshot.CandidateList);
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public sealed class PresentationSnapshotTests
         controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkJ, control: true), null);
         controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkK, 'K', shift: true), null);
 
-        Assert.AreEqual(2, snapshots.Count);
+        Assert.HasCount(2, snapshots);
         Assert.AreEqual(1, snapshots[0].Version);
         Assert.AreEqual(2, snapshots[1].Version);
         Assert.AreEqual("[あ]", snapshots[1].StatusText);

@@ -49,7 +49,7 @@ public sealed class SkkEngineTests
         Assert.AreEqual("", kana.State.RomajiBuffer);
         Assert.AreEqual("", kana.State.CompositionBuffer);
         Assert.IsFalse(enter.IsHandled);
-        Assert.AreEqual(0, enter.Effects.Length);
+        Assert.IsEmpty(enter.Effects);
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public sealed class SkkEngineTests
 
         var result = runner.Process(Key(SkkKeyConstants.VkSpace, ' '));
 
-        Assert.IsTrue(result.Effects.OfType<WriteLogEffect>().Any());
+        Assert.IsNotEmpty(result.Effects.OfType<WriteLogEffect>());
         Assert.AreEqual("か", result.State.RegistrationStack.Single().Reading);
     }
 
@@ -128,7 +128,7 @@ public sealed class SkkEngineTests
 
         var completed = runner.Process(Key(SkkKeyConstants.VkTab));
         Assert.AreEqual(0, completed.State.CompletionIndex);
-        Assert.IsTrue(completed.State.Completions.Length > 0);
+        Assert.IsNotEmpty(completed.State.Completions);
 
         var cancelled = runner.Process(Key(SkkKeyConstants.VkEscape));
         Assert.AreEqual(-1, cancelled.State.CompletionIndex);
@@ -166,8 +166,8 @@ public sealed class SkkEngineTests
         }
 
         stopwatch.Stop();
-        Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(5), $"Queries took {stopwatch.Elapsed}.");
-        Assert.AreEqual(0, dictionary.User.Count);
+        Assert.IsLessThan(stopwatch.Elapsed, TimeSpan.FromSeconds(5), $"Queries took {stopwatch.Elapsed}.");
+        Assert.IsEmpty(dictionary.User);
     }
 
     private static KeyCommand Key(int vkCode, char ch = '\0', bool shift = false, bool control = false) =>

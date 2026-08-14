@@ -37,8 +37,8 @@ public sealed class RuntimeInfrastructureTests
             writer.Enqueue(latest);
         }
 
-        Assert.AreEqual(0, logger.Messages.Count);
-        StringAssert.Contains(File.ReadAllText(path, Encoding.UTF8), "よみ /二/一/");
+        Assert.IsEmpty(logger.Messages);
+        Assert.Contains("よみ /二/一/", File.ReadAllText(path, Encoding.UTF8));
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public sealed class RuntimeInfrastructureTests
         await Task.Delay(800);
 
         Assert.AreEqual(0, callbackCount);
-        Assert.IsTrue(logger.Messages.Any(message => message.Contains("invalid config", StringComparison.Ordinal)));
+        Assert.Contains(message => message.Contains("invalid config", StringComparison.Ordinal), logger.Messages);
     }
 
     [TestMethod]
