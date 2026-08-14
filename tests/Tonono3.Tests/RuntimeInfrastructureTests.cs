@@ -8,14 +8,17 @@ namespace Tonono3.Tests;
 public sealed class RuntimeInfrastructureTests
 {
     [TestMethod]
-    public void AppConfigComparisonDoesNotDependOnDictionaryInsertionOrder()
+    public void AppConfigComparisonDetectsEntryChanges()
     {
         using var env = new TestEnvironment();
         var first = env.CreateConfig();
-        var reversedRomaji = first.RomajiTable.Reverse().ToDictionary();
-        var second = first with { RomajiTable = reversedRomaji };
+        var changedRomaji = first.RomajiTable.SetItem(
+            0,
+            new(first.RomajiTable[0].Key, "changed"));
+        var second = first with { RomajiTable = changedRomaji };
 
-        Assert.IsFalse(first.HasChange(second));
+        Assert.IsFalse(first.HasChange(first));
+        Assert.IsTrue(first.HasChange(second));
     }
 
     [TestMethod]

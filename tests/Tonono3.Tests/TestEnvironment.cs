@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.IO.Compression;
 using System.Text;
 using Tonono3.SKKEngine;
@@ -19,20 +20,27 @@ internal sealed class TestEnvironment : IDisposable
     public AppConfig CreateConfig(
         IEnumerable<string>? dictionaryPaths = null,
         string? userDictionaryPath = null,
-        IEnumerable<string>? viCompatibleApps = null) =>
-        new(
-            new Dictionary<string, string>
-            {
-                ["a"] = "あ", ["i"] = "い", ["u"] = "う", ["e"] = "え", ["o"] = "お",
-                ["ka"] = "か", ["ki"] = "き", ["ku"] = "く", ["ke"] = "け", ["ko"] = "こ",
-                ["nn"] = "ん", [","] = "、", ["."] = "。", ["-"] = "ー"
-            },
-            new Dictionary<string, string> { ["kk"] = "っ", ["nk"] = "ん" },
-            new Dictionary<string, string> { ["n"] = "ん" },
-            new Dictionary<char, string> { ['a'] = "ａ", [' '] = "　", ['!'] = "！" },
-            dictionaryPaths?.ToArray() ?? [CreateMainDictionary("main.txt", Encoding.UTF8, false)],
+        IEnumerable<string>? viCompatibleApps = null)
+    {
+        var romaji = new Dictionary<string, string>
+        {
+            ["a"] = "あ", ["i"] = "い", ["u"] = "う", ["e"] = "え", ["o"] = "お",
+            ["ka"] = "か", ["ki"] = "き", ["ku"] = "く", ["ke"] = "け", ["ko"] = "こ",
+            ["nn"] = "ん", [","] = "、", ["."] = "。", ["-"] = "ー"
+        };
+        var moraModifier = new Dictionary<string, string> { ["kk"] = "っ", ["nk"] = "ん" };
+        var moraAutoComplete = new Dictionary<string, string> { ["n"] = "ん" };
+        var zenkaku = new Dictionary<char, string> { ['a'] = "ａ", [' '] = "　", ['!'] = "！" };
+
+        return new(
+            [.. romaji.OrderBy(pair => pair.Key, StringComparer.Ordinal)],
+            [.. moraModifier.OrderBy(pair => pair.Key, StringComparer.Ordinal)],
+            [.. moraAutoComplete.OrderBy(pair => pair.Key, StringComparer.Ordinal)],
+            [.. zenkaku.OrderBy(pair => pair.Key)],
+            dictionaryPaths?.ToImmutableArray() ?? [CreateMainDictionary("main.txt", Encoding.UTF8, false)],
             userDictionaryPath ?? PathFor("user.txt"),
-            viCompatibleApps?.ToArray() ?? ["vim.exe"]);
+            viCompatibleApps?.ToImmutableArray() ?? ["vim.exe"]);
+    }
 
     public string CreateMainDictionary(string fileName, Encoding encoding, bool gzip, params string[]? lines)
     {

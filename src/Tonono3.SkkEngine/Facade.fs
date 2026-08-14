@@ -16,10 +16,10 @@ type SkkEngineFacade private () =
 
     [<ServiceFunction>]
     static member CreateConfig(
-        romaji: IReadOnlyDictionary<string,string>, mora: IReadOnlyDictionary<string,string>,
-        moraComplete: IReadOnlyDictionary<string,string>, zenkaku: IReadOnlyDictionary<char,string>,
-        viApps: string array) =
-        let toMap (source: IReadOnlyDictionary<'k,'v>) = source |> Seq.map (fun pair -> pair.Key, pair.Value) |> Map.ofSeq
+        romaji: ImmutableArray<KeyValuePair<string,string>>, mora: ImmutableArray<KeyValuePair<string,string>>,
+        moraComplete: ImmutableArray<KeyValuePair<string,string>>, zenkaku: ImmutableArray<KeyValuePair<char,string>>,
+        viApps: ImmutableArray<string>) =
+        let toMap (source: ImmutableArray<KeyValuePair<'k,'v>>) = source |> Seq.map (fun pair -> pair.Key, pair.Value) |> Map.ofSeq
         EngineConfig(toMap romaji, toMap mora, toMap moraComplete, toMap zenkaku, viApps |> Seq.map (fun value -> value.ToLowerInvariant()) |> Set.ofSeq)
 
     [<ServiceFunction>]

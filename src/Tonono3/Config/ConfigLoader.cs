@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -46,7 +47,14 @@ public sealed class ConfigLoader(IConfigPathProvider paths, WriteLogFunc writeLo
             var (dics, userdic) = LoadDictionaryPath(yamlObj);
             var vicompatible = LoadViCompatibleApps(yamlObj);
 
-            var appConfig = new AppConfig(romaji, mora, moraComp, zenkaku, dics, userdic, vicompatible);
+            var appConfig = new AppConfig(
+                ToSortedEntries(romaji, StringComparer.Ordinal),
+                ToSortedEntries(mora, StringComparer.Ordinal),
+                ToSortedEntries(moraComp, StringComparer.Ordinal),
+                ToSortedEntries(zenkaku, Comparer<char>.Default),
+                [.. dics],
+                userdic,
+                [.. vicompatible]);
             if (appConfig.HasError)
             {
                 throw new InvalidDataException("Error loading config.yaml");
@@ -96,4 +104,10 @@ public sealed class ConfigLoader(IConfigPathProvider paths, WriteLogFunc writeLo
     }
 
     private static string[] LoadViCompatibleApps(ConfigYaml data) => [.. data.ViCompatibleApps.Select(i => i.Replace('/', '\\'))];
+
+    private static ImmutableArray<KeyValuePair<TKey, TValue>> ToSortedEntries<TKey, TValue>(
+        Dictionary<TKey, TValue> source,
+        IComparer<TKey> comparer)
+        where TKey : notnull =>
+        [.. source.OrderBy(pair => pair.Key, comparer)];
 }

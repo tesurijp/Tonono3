@@ -1,33 +1,34 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using VYaml.Annotations;
 
 namespace Tonono3;
 
 public record class AppConfig(
-    Dictionary<string, string> RomajiTable,
-    Dictionary<string, string> MoraModifier,
-    Dictionary<string, string> MoraAutoComplete,
-    Dictionary<char, string> ZenkakuTable,
-    string[] DictionaryPaths,
+    ImmutableArray<KeyValuePair<string, string>> RomajiTable,
+    ImmutableArray<KeyValuePair<string, string>> MoraModifier,
+    ImmutableArray<KeyValuePair<string, string>> MoraAutoComplete,
+    ImmutableArray<KeyValuePair<char, string>> ZenkakuTable,
+    ImmutableArray<string> DictionaryPaths,
     string UserDictionaryPath,
-    string[] ViCompatibleApps)
+    ImmutableArray<string> ViCompatibleApps)
 {
-    public bool HasError => Enumerable.Any([RomajiTable.Count, MoraModifier.Count, ZenkakuTable.Count, DictionaryPaths.Length], i => i < 1);
-    public bool HasChange(AppConfig other) => !(
-        UserDictionaryPath == other.UserDictionaryPath &&
-        DictionaryEqual(RomajiTable, other.RomajiTable) &&
-        DictionaryEqual(ZenkakuTable, other.ZenkakuTable) &&
-        DictionaryEqual(MoraModifier, other.MoraModifier) &&
-        DictionaryEqual(MoraAutoComplete, other.MoraAutoComplete) &&
-        DictionaryPaths.SequenceEqual(other.DictionaryPaths) &&
-        ViCompatibleApps.SequenceEqual(other.ViCompatibleApps));
+    public bool HasError =>
+        RomajiTable.IsEmpty ||
+        MoraModifier.IsEmpty ||
+        ZenkakuTable.IsEmpty ||
+        DictionaryPaths.IsEmpty;
 
-    private static bool DictionaryEqual<TKey, TValue>(Dictionary<TKey, TValue> left, Dictionary<TKey, TValue> right)
-        where TKey : notnull =>
-        left.Count == right.Count && left.All(pair => right.TryGetValue(pair.Key, out var value) && EqualityComparer<TValue>.Default.Equals(pair.Value, value));
-
+    public bool HasChange(AppConfig other) =>
+        UserDictionaryPath != other.UserDictionaryPath ||
+        !RomajiTable.SequenceEqual(other.RomajiTable) ||
+        !ZenkakuTable.SequenceEqual(other.ZenkakuTable) ||
+        !MoraModifier.SequenceEqual(other.MoraModifier) ||
+        !MoraAutoComplete.SequenceEqual(other.MoraAutoComplete) ||
+        !DictionaryPaths.SequenceEqual(other.DictionaryPaths) ||
+        !ViCompatibleApps.SequenceEqual(other.ViCompatibleApps);
 }
 
 [YamlObject]

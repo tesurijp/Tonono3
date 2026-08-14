@@ -19,16 +19,12 @@ public class InfoViewModel(AppConfig cfg, string configPath)
 {
     public string ConfigPath => configPath;
     public IEnumerable<InfoStringPairRow> RomajiEntries => cfg.RomajiTable
-        .OrderBy(kv => kv.Key)
         .Select(kv => new InfoStringPairRow { Key = kv.Key, Value = kv.Value });
     public IEnumerable<InfoCharStringPairRow> ZenkakuEntries => cfg.ZenkakuTable
-        .OrderBy(kv => kv.Key)
         .Select(kv => new InfoCharStringPairRow { Key = kv.Key, Value = kv.Value });
     public IEnumerable<InfoStringPairRow> MoraModifierEntries => cfg.MoraModifier
-        .OrderBy(kv => kv.Key)
         .Select(kv => new InfoStringPairRow { Key = kv.Key, Value = kv.Value });
     public IEnumerable<InfoStringPairRow> MoraAutoCompleteEntries => cfg.MoraAutoComplete
-        .OrderBy(kv => kv.Key)
         .Select(kv => new InfoStringPairRow { Key = kv.Key, Value = kv.Value });
     public IEnumerable<string> DictionaryPaths => cfg.DictionaryPaths;
     public IEnumerable<string> ViCompatibleApps => cfg.ViCompatibleApps;
