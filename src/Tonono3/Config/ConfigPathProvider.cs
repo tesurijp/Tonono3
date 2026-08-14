@@ -8,23 +8,13 @@ namespace Tonono3;
 public sealed class ConfigPathProvider : IConfigPathProvider
 {
     public string ConfigFileName => "config.yaml";
-    public string SystemConfigFolder { get; } = AppContext.BaseDirectory;
-    public string UserConfigFolder { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "Tonono3");
-
-    public string ConfigPath => HasUserConfig
-        ? Path.Combine(UserConfigFolder, ConfigFileName)
-        : Path.Combine(SystemConfigFolder, ConfigFileName);
-
-    public string ConfigFolder => HasUserConfig ? UserConfigFolder : SystemConfigFolder;
-
-    private bool HasUserConfig =>
-        UserConfigEnabled && File.Exists(Path.Combine(UserConfigFolder, ConfigFileName));
-
+    public string SystemConfigFolder => AppContext.BaseDirectory;
+    public string UserConfigFolder => Path.Combine( Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Tonono3");
+    public string ConfigPath => Path.Combine(ConfigFolder, ConfigFileName);
 #if DEBUG
-    private const bool UserConfigEnabled = false;
+    public string ConfigFolder => SystemConfigFolder;
 #else
-    private const bool UserConfigEnabled = true;
+    private bool HasUserConfig => File.Exists(Path.Combine(UserConfigFolder, ConfigFileName));
+    public string ConfigFolder => HasUserConfig ? UserConfigFolder : SystemConfigFolder;
 #endif
 }
