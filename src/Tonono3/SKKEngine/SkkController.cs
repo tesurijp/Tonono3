@@ -77,7 +77,10 @@ public sealed class SkkController : ISkkController
     {
         get
         {
-            lock (gate) return ToUiSnapshot(currentState, uiVersion);
+            lock (gate)
+            {
+                return ToUiSnapshot(currentState, uiVersion);
+            }
         }
     }
 
@@ -85,7 +88,10 @@ public sealed class SkkController : ISkkController
     {
         get
         {
-            lock (gate) return currentConfig;
+            lock (gate)
+            {
+                return currentConfig;
+            }
         }
     }
 
@@ -93,7 +99,10 @@ public sealed class SkkController : ISkkController
     {
         lock (gate)
         {
-            if (started || disposed) return;
+            if (started || disposed)
+            {
+                return;
+            }
             started = true;
             configWatcher.RuntimeReloaded += OnRuntimeReloaded;
         }
@@ -131,7 +140,10 @@ public sealed class SkkController : ISkkController
     {
         lock (gate)
         {
-            if (disposed) return false;
+            if (disposed)
+            {
+                return false;
+            }
             ApplyPendingRuntime();
             var result = processKey(
                 currentState,
@@ -149,7 +161,10 @@ public sealed class SkkController : ISkkController
 
     private void ApplyPendingRuntime()
     {
-        if (pendingRuntime is null) return;
+        if (pendingRuntime is null)
+        {
+            return;
+        }
 
         var pending = pendingRuntime;
         pendingRuntime = null;
@@ -195,7 +210,10 @@ public sealed class SkkController : ISkkController
     {
         lock (gate)
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
             disposed = true;
             configWatcher.RuntimeReloaded -= OnRuntimeReloaded;
             UiUpdated = null;

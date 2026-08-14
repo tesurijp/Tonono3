@@ -29,7 +29,10 @@ internal sealed class UserDictionaryWriter : IUserDictionaryWriter
 
     public void Enqueue(ImmutableDictionary<string, ImmutableArray<string>> dictionary)
     {
-        if (!disposed) channel.Writer.TryWrite(dictionary);
+        if (!disposed)
+        {
+            channel.Writer.TryWrite(dictionary);
+        }
     }
 
     private async Task RunAsync()
@@ -37,7 +40,10 @@ internal sealed class UserDictionaryWriter : IUserDictionaryWriter
         await foreach (var first in channel.Reader.ReadAllAsync())
         {
             var latest = first;
-            while (channel.Reader.TryRead(out var newer)) latest = newer;
+            while (channel.Reader.TryRead(out var newer))
+            {
+                latest = newer;
+            }
             await SaveAsync(latest).ConfigureAwait(false);
         }
     }
@@ -48,7 +54,10 @@ internal sealed class UserDictionaryWriter : IUserDictionaryWriter
         var tempPath = path + ".tmp";
         try
         {
-            if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
+            if (!string.IsNullOrEmpty(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
             var lines = dictionary.Select(pair => $"{pair.Key} /{string.Join("/", pair.Value)}/");
             await File.WriteAllLinesAsync(tempPath, lines, Encoding.UTF8).ConfigureAwait(false);
             File.Move(tempPath, path, overwrite: true);
@@ -61,7 +70,10 @@ internal sealed class UserDictionaryWriter : IUserDictionaryWriter
 
     public void Dispose()
     {
-        if (disposed) return;
+        if (disposed)
+        {
+            return;
+        }
         disposed = true;
         channel.Writer.TryComplete();
         if (!writerTask.Wait(TimeSpan.FromSeconds(5)))

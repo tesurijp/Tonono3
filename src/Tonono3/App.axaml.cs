@@ -26,7 +26,10 @@ public partial class App(IApplicationCoordinator coordinator) : Application, IDi
 
     public void Dispose()
     {
-        if (disposed) return;
+        if (disposed)
+        {
+            return;
+        }
         disposed = true;
         coordinator.Dispose();
         GC.SuppressFinalize(this);

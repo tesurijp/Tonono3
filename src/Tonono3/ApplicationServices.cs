@@ -66,9 +66,15 @@ public sealed class ApplicationCoordinator(
 
     public void Dispose()
     {
-        if (disposed) return;
+        if (disposed)
+        {
+            return;
+        }
         disposed = true;
-        if (ui is not null) controller.UiUpdated -= ui.ApplySnapshot;
+        if (ui is not null)
+        {
+            controller.UiUpdated -= ui.ApplySnapshot;
+        }
         menu?.Dispose();
         ui?.Close();
         controller.Dispose();

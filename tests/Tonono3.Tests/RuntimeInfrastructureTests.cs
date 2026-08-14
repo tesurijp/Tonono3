@@ -163,8 +163,7 @@ public sealed class RuntimeInfrastructureTests
             context.Controller,
             new FakeTononoUiFactory(ui).Create,
             new FakeSystemMenuFactory(menu).Create,
-            applicationControl.Initialize,
-            new FakeWindowIconProvider().Load);
+            applicationControl.Initialize);
 
         coordinator.Start(null);
         coordinator.Dispose();

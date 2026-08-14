@@ -31,7 +31,10 @@ public sealed class ConfigWatcher(
     {
         lock (gate)
         {
-            if (started || disposed) return;
+            if (started || disposed)
+            {
+                return;
+            }
             systemWatcher = CreateWatcher(paths.SystemConfigFolder);
             userWatcher = CreateWatcher(paths.UserConfigFolder);
             activeConfigPath = Path.GetFullPath(paths.ConfigPath);
@@ -91,7 +94,10 @@ public sealed class ConfigWatcher(
         long scheduledGeneration;
         lock (gate)
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
             scheduledGeneration = ++generation;
             debounceCancellation?.Cancel();
             debounceCancellation?.Dispose();
@@ -114,8 +120,14 @@ public sealed class ConfigWatcher(
             var (conf, dict) = await Task.Run(LoadRuntime, token).ConfigureAwait(false);
             lock (gate)
             {
-                if (disposed || token.IsCancellationRequested || scheduledGeneration != generation) return;
-                if (systemWatcher is not null) activeConfigPath = Path.GetFullPath(paths.ConfigPath);
+                if (disposed || token.IsCancellationRequested || scheduledGeneration != generation)
+                {
+                    return;
+                }
+                if (systemWatcher is not null)
+                {
+                    activeConfigPath = Path.GetFullPath(paths.ConfigPath);
+                }
             }
             RuntimeReloaded?.Invoke(scheduledGeneration, conf, dict);
             writeLog("config.yaml update success.");
@@ -133,7 +145,10 @@ public sealed class ConfigWatcher(
     {
         lock (gate)
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
             disposed = true;
             ++generation;
             debounceCancellation?.Cancel();

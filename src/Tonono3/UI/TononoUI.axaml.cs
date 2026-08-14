@@ -31,7 +31,10 @@ public partial class TononoUI : Window, ITononoUi
         PositionChanged += (_, _) => ApplyNativeWindowStyles();
         Resized += (_, _) =>
         {
-            if (IsVisible) UpdatePosition();
+            if (IsVisible)
+            {
+                UpdatePosition();
+            }
         };
     }
 
@@ -39,7 +42,10 @@ public partial class TononoUI : Window, ITononoUi
     {
         Dispatcher.UIThread.Post(() =>
         {
-            if (snapshot.Version < appliedVersion) return;
+            if (snapshot.Version < appliedVersion)
+            {
+                return;
+            }
             appliedVersion = snapshot.Version;
             StatusTextBlock.Text = snapshot.StatusText;
             RegistrationPanel.IsVisible = snapshot.IsInRegistrationMode;
@@ -50,7 +56,10 @@ public partial class TononoUI : Window, ITononoUi
 
             if (snapshot.IsVisible)
             {
-                if (!IsVisible) Show();
+                if (!IsVisible)
+                {
+                    Show();
+                }
                 ApplyNativeWindowStyles();
                 UpdatePosition();
             }
@@ -63,7 +72,10 @@ public partial class TononoUI : Window, ITononoUi
 
     private void ApplyNativeWindowStyles()
     {
-        if (nativeStyleApplied) return;
+        if (nativeStyleApplied)
+        {
+            return;
+        }
 
         var handle = TryGetPlatformHandle();
         if (handle != null)
@@ -77,7 +89,10 @@ public partial class TononoUI : Window, ITononoUi
     {
         var scale = RenderScaling;
         var (posX, posY) = getTargetWindowPosition(scale, scale, Bounds.Width, Bounds.Height);
-        if (double.IsNaN(posX) || double.IsNaN(posY)) return;
+        if (double.IsNaN(posX) || double.IsNaN(posY))
+        {
+            return;
+        }
         Position = new PixelPoint((int)Math.Round(posX * scale), (int)Math.Round(posY * scale));
     }
 }
