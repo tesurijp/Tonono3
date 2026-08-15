@@ -11,6 +11,7 @@ module internal EngineRuntime =
     let mode (runtime: Runtime) = StateModel.inputMode runtime.State.Input
     let composition (runtime: Runtime) = StateModel.composition runtime.State.Input
     let isBufferActive (runtime: Runtime) = composition runtime |> Option.exists (fun value -> value.Text <> "" || value.Romaji <> "")
+    let canStartConversion (runtime: Runtime) = composition runtime |> Option.exists (fun value -> value.Text <> "")
     let withInput (input: InputState) (runtime: Runtime) = { runtime with State = { runtime.State with Input = input } }
     let withComposition (value: Composition) (runtime: Runtime) =
         let currentMode = mode runtime

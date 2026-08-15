@@ -32,7 +32,7 @@ module internal Engine =
         | false, Slash, false -> true, withComposition (StateModel.emptyComposition Abbreviation) runtime
         | false, Back, _ -> handleBackspace runtime
         | false, Return, _ when isBufferActive runtime -> true, commitAll runtime
-        | false, Space, _ when isBufferActive runtime -> true, startConversion config runtime
+        | false, Space, _ when canStartConversion runtime -> true, startConversion config runtime
         | _ -> handleChar config command.Character runtime
 
     and private processComposition (config: EngineConfig) (command: KeyCommand) (runtime: Runtime) =
@@ -63,7 +63,7 @@ module internal Engine =
             | Some current ->
                 let accepted = { value with Text = List.item current.Index current.Items; Completion = None }
                 true, withComposition accepted runtime |> startConversion config
-            | None when isBufferActive runtime -> true, startConversion config runtime
+            | None when canStartConversion runtime -> true, startConversion config runtime
             | None -> false, runtime
         | false, Back, _ -> handleBackspace runtime
         | _ -> handleChar config command.Character runtime

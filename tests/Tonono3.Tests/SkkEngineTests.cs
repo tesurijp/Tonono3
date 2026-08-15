@@ -87,6 +87,23 @@ public sealed class SkkEngineTests
     }
 
     [TestMethod]
+    public void SpaceDoesNotStartConversionBeforeKanaIsConfirmed()
+    {
+        using var env = new TestEnvironment();
+        var runner = CreateRunner(env.CreateConfig());
+        runner.Process(Key(SkkKeyConstants.VkJ, control: true));
+        runner.Process(Key(SkkKeyConstants.VkK, 'K', shift: true));
+
+        var result = runner.Process(Key(SkkKeyConstants.VkSpace, ' '));
+
+        Assert.IsFalse(result.IsHandled);
+        Assert.AreEqual("k", result.State.RomajiBuffer);
+        Assert.AreEqual("", result.State.CompositionBuffer);
+        Assert.IsEmpty(result.State.RegistrationStack);
+        Assert.IsEmpty(result.Effects);
+    }
+
+    [TestMethod]
     public void ModeChangesAreRepresentedWithoutCompositionFlags()
     {
         using var env = new TestEnvironment();
