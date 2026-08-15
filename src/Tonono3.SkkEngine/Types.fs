@@ -59,6 +59,9 @@ type CommitTextEffect(text: string) =
 type PersistUserDictionaryEffect() = inherit EngineEffect()
 
 [<Sealed>]
+type TurnOffImeEffect() = inherit EngineEffect()
+
+[<Sealed>]
 type WriteLogEffect(message: string) =
     inherit EngineEffect()
     member _.Message = message

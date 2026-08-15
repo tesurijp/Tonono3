@@ -16,9 +16,9 @@ module internal Engine =
             | Some _, _, _ -> processComposition config command runtime
             | None, _ :: _, _ -> processRegistration config command runtime
             | None, _, Disabled ->
-                if command.Control && command.VkCode = J then true, changeMode InputMode.Hiragana runtime else false, runtime
+                if command.Control && command.VkCode = J then true, runtime |> changeMode InputMode.Hiragana |> turnOffIme else false, runtime
             | None, _, Idle InputMode.Zenkaku ->
-                if command.Control && command.VkCode = J then true, changeMode InputMode.Hiragana runtime
+                if command.Control && command.VkCode = J then true, runtime |> changeMode InputMode.Hiragana |> turnOffIme
                 else Map.tryFind command.Character config.Zenkaku |> Option.map (fun text -> true, commitProduced text runtime) |> Option.defaultValue (false, runtime)
             | None, _, Idle _ -> processIdle config command runtime
             | None, _, Composing _ -> false, runtime
@@ -26,7 +26,7 @@ module internal Engine =
     and private processIdle (config: EngineConfig) (command: KeyCommand) (runtime: Runtime) =
         match command.Control, command.VkCode, command.Shift with
         | true, _, _ -> commonControl command runtime
-        | false, L, false -> true, runtime |> commitAll |> changeMode InputMode.Disabled
+        | false, L, false -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Disabled
         | false, L, true -> true, runtime |> commitAll |> changeMode InputMode.Zenkaku
         | false, Q, _ -> handleQ config runtime
         | false, Slash, false -> true, withComposition (StateModel.emptyComposition Abbreviation) runtime
@@ -43,7 +43,7 @@ module internal Engine =
         match command.Control, command.VkCode, command.Shift with
         | _, Escape, _ -> true, reset runtime
         | true, _, _ -> commonControl command runtime
-        | false, L, false -> true, runtime |> commitAll |> changeMode InputMode.Disabled
+        | false, L, false -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Disabled
         | false, L, true -> true, runtime |> commitAll |> changeMode InputMode.Zenkaku
         | false, Q, _ -> handleQ config runtime
         | false, Return, _ -> true, commitAll runtime

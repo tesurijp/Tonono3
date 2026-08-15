@@ -127,7 +127,7 @@ module internal EngineComposition =
 
     let commonControl (command: KeyCommand) (runtime: Runtime) =
         match command.VkCode with
-        | J -> true, runtime |> commitAll |> changeMode InputMode.Hiragana
+        | J -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Hiragana
         | G when isBufferActive runtime -> true, reset runtime
         | G -> false, runtime
         | _ -> false, runtime

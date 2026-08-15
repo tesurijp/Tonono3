@@ -36,6 +36,18 @@ public sealed class SkkEngineTests
     }
 
     [TestMethod]
+    public void ControlJTurnsOffImeWhenEnteringKanaMode()
+    {
+        using var env = new TestEnvironment();
+        var runner = CreateRunner(env.CreateConfig());
+
+        var result = runner.Process(Key(SkkKeyConstants.VkJ, control: true));
+
+        Assert.AreEqual(InputMode.Hiragana, result.State.Mode);
+        Assert.HasCount(1, result.Effects.OfType<TurnOffImeEffect>());
+    }
+
+    [TestMethod]
     public void EnterPassesThroughImmediatelyAfterDirectKanaCommit()
     {
         using var env = new TestEnvironment();
@@ -128,6 +140,9 @@ public sealed class SkkEngineTests
         Assert.AreEqual("あ", kana.Effects.OfType<CommitTextEffect>().Single().Text);
 
         var disabled = runner.Process(Key(SkkKeyConstants.VkL, 'l'));
+
+        Assert.HasCount(1, disabled.Effects.OfType<TurnOffImeEffect>());
+        Assert.IsInstanceOfType<TurnOffImeEffect>(disabled.Effects[0]);
 
         Assert.IsTrue(disabled.IsHandled);
         Assert.AreEqual(InputMode.Disabled, disabled.State.Mode);

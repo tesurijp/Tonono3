@@ -21,6 +21,7 @@ module internal EngineRuntime =
             else Composing(currentMode, value)
         withInput input runtime
     let addEffect (effect: EngineEffect) (runtime: Runtime) = { runtime with Effects = effect :: runtime.Effects }
+    let turnOffIme (runtime: Runtime) = addEffect (TurnOffImeEffect()) runtime
     let addLog (message: string) (runtime: Runtime) = addEffect (WriteLogEffect(message)) runtime
     let reset (runtime: Runtime) = withInput (if mode runtime = InputMode.Disabled then Disabled else Idle(mode runtime)) runtime
     let changeMode (next: InputMode) (runtime: Runtime) =
