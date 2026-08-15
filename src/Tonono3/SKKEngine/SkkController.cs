@@ -15,7 +15,8 @@ public sealed class SkkController : ISkkController
     private readonly GetMetaKeyStateFunc getMetaKeyState;
     private readonly ConvertVirtualKeyToCharFunc convertVirtualKeyToChar;
     private readonly GetActiveProcessPathFunc getActiveProcessPath;
-    private readonly ExecuteEngineEffectsFunc executeEngineEffects;
+    private readonly ExecuteEngineEffectsFunc executeEngineEffectsOrg;
+    private Action<TransitionResult> executeEngineEffects;
     private readonly CreateKeyCommandFunc createKeyCommand;
     private readonly CreateConfigFunc createConfig;
     private readonly CreateDictionaryFunc createDictionary;
@@ -54,7 +55,7 @@ public sealed class SkkController : ISkkController
         this.getMetaKeyState = getMetaKeyState;
         this.convertVirtualKeyToChar = convertVirtualKeyToChar;
         this.getActiveProcessPath = getActiveProcessPath;
-        this.executeEngineEffects = executeEngineEffects;
+        this.executeEngineEffectsOrg = executeEngineEffects;
         this.createKeyCommand = createKeyCommand;
         this.createConfig = createConfig;
         this.createDictionary = createDictionary;
@@ -69,6 +70,7 @@ public sealed class SkkController : ISkkController
         currentEngineConfig = ToEngineConfig(currentConfig);
         currentState = createInitialState();
         dictionaryWriter = createUserDictionaryWriter(currentConfig.UserDictionaryPath);
+        this.executeEngineEffects = executeEngineEffectsOrg.Bind(dictionaryWriter);
     }
 
     public event Action<SkkUiSnapshot>? UiUpdated;
@@ -153,7 +155,7 @@ public sealed class SkkController : ISkkController
                 activeProcessPath!);
             currentState = result.State;
             currentDictionary = result.Dictionary;
-            executeEngineEffects(result, dictionaryWriter);
+            executeEngineEffects(result);
             UiUpdated?.Invoke(ToUiSnapshot(result.State, ++uiVersion));
             return result.IsHandled;
         }
@@ -175,6 +177,7 @@ public sealed class SkkController : ISkkController
         {
             dictionaryWriter.Dispose();
             dictionaryWriter = createUserDictionaryWriter(pending.Config.UserDictionaryPath);
+            executeEngineEffects = executeEngineEffectsOrg.Bind(dictionaryWriter);
         }
         currentConfig = pending.Config;
         currentEngineConfig = ToEngineConfig(pending.Config);

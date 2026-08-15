@@ -102,7 +102,7 @@ internal sealed class FakeActiveProcess
 internal sealed class FakeEffectExecutor
 {
     internal List<TransitionResult> Results { get; } = [];
-    public void Execute(TransitionResult result, IUserDictionaryWriter dictionaryWriter) =>
+    public void Execute(IUserDictionaryWriter dictionaryWriter, TransitionResult result) =>
         Results.Add(result);
 }
 

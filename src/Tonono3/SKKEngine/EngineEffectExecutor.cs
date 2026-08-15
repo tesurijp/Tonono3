@@ -7,7 +7,7 @@ namespace Tonono3.SKKEngine;
 public sealed class EngineEffectExecutor(SendTextFunc sendText, TurnOffImeFunc turnOffIme, WriteLogFunc writeLog)
 {
     [ServiceFunction(ServiceName = "ExecuteEngineEffectsFunc")]
-    public void Execute(TransitionResult result, IUserDictionaryWriter dictionaryWriter)
+    public void Execute(IUserDictionaryWriter dictionaryWriter, TransitionResult result)
     {
         foreach (var effect in result.Effects)
         {
