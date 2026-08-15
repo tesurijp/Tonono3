@@ -1,85 +1,29 @@
 using System;
 using System.Threading;
-using Tonono3.AutoDefined;
 using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class SkkController : ISkkController
+public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler keyHandler, ISkkEngineSession skkEngineSession) : ISkkController
 {
-    private readonly Lock gate = new();
-    private readonly CreateUserDictionaryWriterFunc createUserDictionaryWriter;
-    private readonly IConfigWatcher configWatcher;
-    private readonly ExecuteEngineEffectsFunc executeEngineEffectsOrg;
-    private Action<TransitionResult> executeEngineEffects;
-    private readonly ISkkKeyHandler keyHandler;
-    private readonly CreateConfigFunc createConfig;
-    private readonly CreateDictionaryFunc createDictionary;
-    private readonly ProcessKeyFunc processKey;
-    private readonly CreateUiSnapshotFunc createUiSnapshot;
-    private EngineState currentState;
-    private DictionarySnapshot currentDictionary;
-    private EngineConfig currentEngineConfig;
-    private AppConfig currentConfig;
+    private static readonly Lock gate = new();
     private PendingRuntime? pendingRuntime;
-    private IUserDictionaryWriter dictionaryWriter;
     private bool started;
     private bool disposed;
     private long uiVersion;
 
-    public SkkController(
-        CreateUserDictionaryWriterFunc createUserDictionaryWriter,
-        IConfigWatcher configWatcher,
-        ISkkKeyHandler keyHandler,
-        ExecuteEngineEffectsFunc executeEngineEffects,
-        CreateInitialStateFunc createInitialState,
-        CreateConfigFunc createConfig,
-        CreateDictionaryFunc createDictionary,
-        ProcessKeyFunc processKey,
-        CreateUiSnapshotFunc createUiSnapshot)
-    {
-        this.createUserDictionaryWriter = createUserDictionaryWriter;
-        this.configWatcher = configWatcher;
-        this.executeEngineEffectsOrg = executeEngineEffects;
-        this.keyHandler = keyHandler;
-        this.createConfig = createConfig;
-        this.createDictionary = createDictionary;
-        this.processKey = processKey;
-        this.createUiSnapshot = createUiSnapshot;
-
-        (currentConfig, var dictionary) = configWatcher.LoadRuntime();
-        currentDictionary = ToEngineDictionary(dictionary);
-        currentEngineConfig = ToEngineConfig(currentConfig);
-        currentState = createInitialState();
-        dictionaryWriter = createUserDictionaryWriter(currentConfig.UserDictionaryPath);
-        this.executeEngineEffects = executeEngineEffectsOrg.Bind(dictionaryWriter);
-    }
-
     public event Action<SkkUiSnapshot>? UiUpdated;
 
-    public SkkUiSnapshot CurrentUiSnapshot
+    private static T GetField<T>(Func<T> getter)
     {
-        get
+        lock (gate)
         {
-            lock (gate)
-            {
-                return ToUiSnapshot(currentState, uiVersion);
-            }
+            return getter();
         }
     }
-
-    public AppConfig CurrentConfig
-    {
-        get
-        {
-            lock (gate)
-            {
-                return currentConfig;
-            }
-        }
-    }
-
+    public SkkUiSnapshot CurrentUiSnapshot => GetField(() => skkEngineSession.CreateUiSnapshot(uiVersion));
+    public AppConfig CurrentConfig => GetField(() => skkEngineSession.CurrentConfig);
     public void Start()
     {
         lock (gate)
@@ -92,14 +36,13 @@ public sealed class SkkController : ISkkController
             configWatcher.RuntimeReloaded += OnRuntimeReloaded;
         }
 
+        var (currentConfig, dictionary) = configWatcher.LoadRuntime();
+        skkEngineSession.ApplyRuntime(currentConfig, dictionary);
         configWatcher.Start();
         keyHandler.Start(ProcessCommand);
     }
 
-    private void OnRuntimeReloaded(
-        long generation,
-        AppConfig config,
-        SkkDictionarySnapshot dictionary)
+    private void OnRuntimeReloaded( long generation, AppConfig config, SkkDictionarySnapshot dictionary)
     {
         lock (gate)
         {
@@ -120,66 +63,22 @@ public sealed class SkkController : ISkkController
                 return false;
             }
             ApplyPendingRuntime();
-            var result = processKey(
-                currentState,
-                currentEngineConfig,
-                currentDictionary,
-                command,
-                activeProcessPath!);
-            currentState = result.State;
-            currentDictionary = result.Dictionary;
-            executeEngineEffects(result);
-            UiUpdated?.Invoke(ToUiSnapshot(result.State, ++uiVersion));
+            var result = skkEngineSession.Process(command, activeProcessPath);
+            UiUpdated?.Invoke(skkEngineSession.CreateUiSnapshot(++uiVersion));
             return result.IsHandled;
         }
     }
 
     private void ApplyPendingRuntime()
     {
-        if (pendingRuntime is null)
+        lock (gate)
         {
-            return;
+            if (pendingRuntime is not null)
+            {
+                skkEngineSession.ApplyRuntime(pendingRuntime.Config, pendingRuntime.Dictionary);
+            }
+            pendingRuntime = null;
         }
-
-        var pending = pendingRuntime;
-        pendingRuntime = null;
-        if (!string.Equals(
-                currentConfig.UserDictionaryPath,
-                pending.Config.UserDictionaryPath,
-                StringComparison.Ordinal))
-        {
-            dictionaryWriter.Dispose();
-            dictionaryWriter = createUserDictionaryWriter(pending.Config.UserDictionaryPath);
-            executeEngineEffects = executeEngineEffectsOrg.Bind(dictionaryWriter);
-        }
-        currentConfig = pending.Config;
-        currentEngineConfig = ToEngineConfig(pending.Config);
-        currentDictionary = ToEngineDictionary(pending.Dictionary);
-    }
-
-    private EngineConfig ToEngineConfig(AppConfig config) =>
-        createConfig(
-            config.RomajiTable,
-            config.MoraModifier,
-            config.MoraAutoComplete,
-            config.ZenkakuTable,
-            config.ViCompatibleApps);
-
-    private DictionarySnapshot ToEngineDictionary(SkkDictionarySnapshot dictionary) =>
-        createDictionary(dictionary.Main, dictionary.User);
-
-    private SkkUiSnapshot ToUiSnapshot(EngineState state, long version)
-    {
-        var snapshot = createUiSnapshot(state);
-        return new(
-            version,
-            snapshot.IsVisible,
-            snapshot.StatusText,
-            snapshot.IsInRegistrationMode,
-            snapshot.RegistrationReading,
-            snapshot.RegistrationWord,
-            snapshot.Composition,
-            snapshot.CandidateList);
     }
 
     public void Dispose()
@@ -197,7 +96,7 @@ public sealed class SkkController : ISkkController
 
         keyHandler.Dispose();
         configWatcher.Dispose();
-        dictionaryWriter.Dispose();
+        skkEngineSession.Dispose();
         GC.SuppressFinalize(this);
     }
 
