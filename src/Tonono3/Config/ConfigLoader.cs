@@ -40,8 +40,8 @@ public sealed class ConfigLoader(IConfigPathProvider paths, WriteLogFunc writeLo
         writeLog($"Loading config from: {paths.ConfigPath}");
         try
         {
-            var yaml = File.ReadAllText(paths.ConfigPath);
-            var yamlObj = YamlSerializer.Deserialize<ConfigYaml>(Encoding.UTF8.GetBytes(yaml), serializerOptions);
+            var yaml = File.ReadAllBytes(paths.ConfigPath);
+            var yamlObj = YamlSerializer.Deserialize<ConfigYaml>(yaml, serializerOptions);
             var (romaji, mora, moraComp) = LoadRomajiTable(yamlObj);
             var zenkaku = LoadZenkakuTable(yamlObj);
             var (dics, userdic) = LoadDictionaryPath(yamlObj);

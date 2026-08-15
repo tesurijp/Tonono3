@@ -112,10 +112,9 @@ public sealed class ConfigWatcher(
         try
         {
             await Task.Delay(debounceDelay, token).ConfigureAwait(false);
-            var expectedConfigPath = activeConfigPath;
-            if (expectedConfigPath is not null && !File.Exists(expectedConfigPath))
+            if (activeConfigPath is not null && !File.Exists(activeConfigPath))
             {
-                throw new FileNotFoundException("The active config file does not exist.", expectedConfigPath);
+                throw new FileNotFoundException("The active config file does not exist.", activeConfigPath);
             }
             var (conf, dict) = await Task.Run(LoadRuntime, token).ConfigureAwait(false);
             lock (gate)
