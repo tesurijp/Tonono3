@@ -18,18 +18,6 @@ public sealed class DictionaryCharacterizationTests
     }
 
     [TestMethod]
-    public void SystemDictionaryLoadFailureIsReturnedToTheControllerBoundary()
-    {
-        using var env = new TestEnvironment();
-        var missing = env.PathFor("missing-dictionary.txt");
-
-        var error = Assert.ThrowsExactly<DictionaryLoadException>(() =>
-            CreateLoader().Load([missing], env.PathFor("user.txt")));
-
-        Assert.AreEqual(missing, error.DictionaryPath);
-    }
-
-    [TestMethod]
     public void UserCandidatesPrecedeMainCandidatesAndDuplicatesAreRemoved()
     {
         using var env = new TestEnvironment();
@@ -99,7 +87,7 @@ public sealed class DictionaryCharacterizationTests
         CollectionAssert.AreEqual(new[] { "仮名" }, Candidates(dictionary, "かな"));
     }
 
-    private static SkkDicManager CreateLoader() => new(EngineFunctions.ParseDictionaryLine);
+    private static SkkDicManager CreateLoader() => new(EngineFunctions.ParseDictionaryLine, _ => { });
 
     private static SkkDictionarySnapshot Load(AppConfig config) =>
         CreateLoader().Load(config.DictionaryPaths, config.UserDictionaryPath);

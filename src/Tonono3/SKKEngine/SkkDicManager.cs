@@ -11,7 +11,7 @@ using tsr_di;
 namespace Tonono3.SKKEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class SkkDicManager(ParseDictionaryLineFunc parseDictionaryLine)
+public sealed class SkkDicManager(ParseDictionaryLineFunc parseDictionaryLine, WriteLogFunc writeLog)
 {
     static SkkDicManager() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -29,59 +29,53 @@ public sealed class SkkDicManager(ParseDictionaryLineFunc parseDictionaryLine)
         return Freeze(builder);
     }
 
-    private static byte[] DicBuffer(string path)
+    private static byte[] FileBuffer(string path)
     {
-        using var fileStream = File.OpenRead(path);
-        using Stream inputStream = path.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
-            ? new GZipStream(fileStream, CompressionMode.Decompress)
-            : fileStream;
-
-        using var memoryStream = new MemoryStream();
-        inputStream.CopyTo(memoryStream);
-        return memoryStream.ToArray();
+        if (path.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+        {
+            using var fileStream = File.OpenRead(path);
+            using var gzStream = new GZipStream(fileStream, CompressionMode.Decompress);
+            using var ms = new MemoryStream();
+            gzStream.CopyTo(ms);
+            return ms.ToArray();
+        }
+        else
+        {
+            return File.ReadAllBytes(path);
+        }
     }
 
     private void LoadMainDictionary(string path, Dictionary<string, List<string>> builder)
     {
-        if (!File.Exists(path))
+        if (File.Exists(path))
         {
-            throw new DictionaryLoadException(path, new FileNotFoundException("Dictionary file does not exist.", path));
-        }
-
-        try
-        {
-            var buffer = DicBuffer(path);
-            var encoding = DetectEncoding(buffer);
-            using var reader = new StreamReader(new MemoryStream(buffer), encoding);
-
-            string? line;
-            while ((line = reader.ReadLine()) != null)
+            try
             {
-                ParseLine(line, builder);
+                var buffer = FileBuffer(path);
+                using var reader = ReadBuffer(buffer);
+                ParseLines(reader, builder);
+            }
+            catch (Exception ex) when (ex is not DictionaryLoadException)
+            {
+                throw new DictionaryLoadException(path, ex);
             }
         }
-        catch (Exception ex) when (ex is not DictionaryLoadException)
+        else
         {
-            throw new DictionaryLoadException(path, ex);
+            writeLog($"Dictionary file does not exist. {path}");
+            return;
         }
     }
 
-    private static Encoding DetectEncoding(byte[] buffer)
+    private static StringReader ReadBuffer(byte[] buffer)
     {
-        if (buffer.Length >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF)
-        {
-            return Encoding.UTF8;
-        }
-
         try
         {
-            var utf8 = new UTF8Encoding(false, true);
-            utf8.GetString(buffer);
-            return utf8;
+            return new StringReader(new UTF8Encoding(false, true).GetString(buffer));
         }
         catch (ArgumentException)
         {
-            return Encoding.GetEncoding("euc-jp");
+            return new StringReader(Encoding.GetEncoding("euc-jp").GetString(buffer));
         }
     }
 
@@ -90,26 +84,28 @@ public sealed class SkkDicManager(ParseDictionaryLineFunc parseDictionaryLine)
         var builder = new Dictionary<string, List<string>>();
         if (File.Exists(path))
         {
-            foreach (var line in File.ReadLines(path, Encoding.UTF8))
-            {
-                ParseLine(line, builder);
-            }
+            using var reader = new StreamReader(path);
+            ParseLines(reader, builder);
         }
         return Freeze(builder);
     }
 
-    private void ParseLine(string line, Dictionary<string, List<string>> targetDict)
+    private void ParseLines(TextReader reader, Dictionary<string, List<string>> targetDict)
     {
-        var entry = parseDictionaryLine(line);
-        if (entry.IsValid)
+        while (reader.ReadLine() is string line)
         {
-            IEnumerable<string> candidates = entry.Candidates;
-
-            if (targetDict.TryGetValue(entry.Reading, out var prev))
+            var entry = parseDictionaryLine(line);
+            if (entry.IsValid)
             {
-                candidates = [.. prev.Union(candidates)];
+                if (targetDict.TryGetValue(entry.Reading, out var prev))
+                {
+                    targetDict[entry.Reading] = [.. prev.Union(entry.Candidates)];
+                }
+                else
+                {
+                    targetDict[entry.Reading] = [.. entry.Candidates];
+                }
             }
-            targetDict[entry.Reading] = [.. candidates];
         }
     }
 

@@ -198,7 +198,7 @@ public sealed class SkkEngineTests
         }
 
         stopwatch.Stop();
-        Assert.IsLessThan(stopwatch.Elapsed, TimeSpan.FromSeconds(5), $"Queries took {stopwatch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), stopwatch.Elapsed, $"Queries took {stopwatch.Elapsed}.");
         Assert.IsEmpty(dictionary.User);
     }
 
@@ -226,7 +226,7 @@ public sealed class SkkEngineTests
             CreateDictionaryFunc createDictionary,
             ProcessKeyFunc processKey)
         {
-            var snapshot = new SkkDicManager(parseDictionaryLine)
+            var snapshot = new SkkDicManager(parseDictionaryLine, _ => { })
                 .Load(source.DictionaryPaths, source.UserDictionaryPath);
             config = createConfig(
                 source.RomajiTable, source.MoraModifier, source.MoraAutoComplete,

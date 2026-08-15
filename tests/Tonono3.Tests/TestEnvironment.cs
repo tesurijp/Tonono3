@@ -64,7 +64,7 @@ internal sealed class TestEnvironment : IDisposable
         EngineFunctions.CreateKeyCommand(vkCode, shift, control, ch);
 
     public SkkDictionarySnapshot LoadDictionary(AppConfig config) =>
-        new SkkDicManager(EngineFunctions.ParseDictionaryLine)
+        new SkkDicManager(EngineFunctions.ParseDictionaryLine, _ => { })
             .Load(config.DictionaryPaths, config.UserDictionaryPath);
 
     public void Dispose()
