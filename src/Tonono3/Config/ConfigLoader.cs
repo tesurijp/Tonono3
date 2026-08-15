@@ -47,14 +47,7 @@ public sealed class ConfigLoader(IConfigPathProvider paths, WriteLogFunc writeLo
             var (dics, userdic) = LoadDictionaryPath(yamlObj);
             var vicompatible = LoadViCompatibleApps(yamlObj);
 
-            var appConfig = new AppConfig(
-                ToSortedEntries(romaji, StringComparer.Ordinal),
-                ToSortedEntries(mora, StringComparer.Ordinal),
-                ToSortedEntries(moraComp, StringComparer.Ordinal),
-                ToSortedEntries(zenkaku, Comparer<char>.Default),
-                [.. dics],
-                userdic,
-                [.. vicompatible]);
+            var appConfig = new AppConfig(romaji, mora, moraComp, zenkaku, dics, userdic, vicompatible);
             if (appConfig.HasError)
             {
                 throw new InvalidDataException("Error loading config.yaml");
@@ -70,40 +63,40 @@ public sealed class ConfigLoader(IConfigPathProvider paths, WriteLogFunc writeLo
 
     private string PathConvert(string path) => path.Length > 0 && path[0] == '.' ? Path.Combine(paths.ConfigFolder, path) : Path.GetFullPath(path);
 
-    private (string[] systemDic, string userDic) LoadDictionaryPath(ConfigYaml data) =>
+    private (ImmutableArray<string> systemDic, string userDic) LoadDictionaryPath(ConfigYaml data) =>
         ([.. data.DictionaryPaths.Select(PathConvert)], PathConvert(data.UserDictionaryPath));
 
-    private static Dictionary<char, string> LoadZenkakuTable(ConfigYaml data)
+    private static ImmutableArray<KeyValuePair<char, string>> LoadZenkakuTable(ConfigYaml data)
     {
         var startVal = data.ZenkakuTable.Standard.Start;
         var endVal = data.ZenkakuTable.Standard.End;
         var offset = data.ZenkakuTable.Standard.Offset;
 
         var zenkaku = Enumerable.Sequence(startVal, endVal, (char)1).Select(i => (i, ((char)(i + offset)).ToString())).ToDictionary();
-        foreach (var (key, value) in  data.ZenkakuTable.Irregular)
+        foreach (var (key, value) in data.ZenkakuTable.Irregular)
         {
             zenkaku[key[0]] = value;
         }
-        return zenkaku;
+        return ToSortedEntries(zenkaku, Comparer<char>.Default);
     }
 
-    private static (Dictionary<string, string> romaji, Dictionary<string, string> mora, Dictionary<string, string> moraCompete) LoadRomajiTable(ConfigYaml data)
+    private static (ImmutableArray<KeyValuePair<string, string>> romaji, ImmutableArray<KeyValuePair<string, string>> mora, ImmutableArray<KeyValuePair<string, string>> moraCompete) LoadRomajiTable(ConfigYaml data)
     {
         var vowels = data.RomajiTable.Vowel;
         var rows = data.RomajiTable.Rows;
 
         var romaji = rows.SelectMany(row => vowels.Select((vowel, i) => (key: row.Key + vowel, Kana: row.Value[i])))
             .Where(x => !string.IsNullOrEmpty(x.Kana)).ToDictionary();
-        foreach (var (key, value) in  data.RomajiTable.Irregular)
+        foreach (var (key, value) in data.RomajiTable.Irregular)
         {
             romaji[key] = value;
         }
 
         var mora = data.RomajiTable.MoraModifier.SelectMany(k => k.Value.Select(item => (item, ch: k.Key))).ToDictionary();
-        return (romaji, mora, data.RomajiTable.MoraAutoComplete);
+        return (ToSortedEntries(romaji, StringComparer.Ordinal), ToSortedEntries(mora, StringComparer.Ordinal), ToSortedEntries(data.RomajiTable.MoraAutoComplete, StringComparer.Ordinal));
     }
 
-    private static string[] LoadViCompatibleApps(ConfigYaml data) => [.. data.ViCompatibleApps.Select(i => i.Replace('/', '\\'))];
+    private static ImmutableArray<string> LoadViCompatibleApps(ConfigYaml data) => [.. data.ViCompatibleApps.Select(i => i.Replace('/', '\\'))];
 
     private static ImmutableArray<KeyValuePair<TKey, TValue>> ToSortedEntries<TKey, TValue>(
         Dictionary<TKey, TValue> source,
