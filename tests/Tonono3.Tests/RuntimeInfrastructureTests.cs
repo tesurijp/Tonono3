@@ -137,6 +137,7 @@ public sealed class RuntimeInfrastructureTests
         var dictionary = env.LoadDictionary(config);
         var context = new ControllerTestContext(config, dictionary);
         var controller = context.Controller;
+        controller.Start();
         var tasks = Enumerable.Range(0, 50)
             .Select(_ => Task.Run(() => controller.ProcessCommand(
                 TestEnvironment.Key(SkkKeyConstants.VkLeft), null)))

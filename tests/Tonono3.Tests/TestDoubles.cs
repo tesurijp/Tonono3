@@ -90,7 +90,7 @@ internal sealed class FakeKeyboardHook : IKeyboardHook
     internal bool? Publish(int value) => func?.Invoke(value);
 }
 
-internal sealed class FakeKeyboardInput(IKeyboardHook hook ) : ISkkKeyHandler
+internal sealed class FakeKeyboardInput(IKeyboardHook hook) : ISkkKeyHandler
 {
 
     public void Start(Func<KeyCommand, string?, bool> process)
@@ -108,11 +108,34 @@ internal sealed class FakeActiveProcess
     public string GetActiveProcessPath() => "";
 }
 
-internal sealed class FakeEffectExecutor
+internal sealed class FakeEffectDispatcher(
+    FakeUserDictionaryWriterFactory writerFactory) : IEngineEffectDispatcher
 {
     internal List<TransitionResult> Results { get; } = [];
-    public void Execute(IUserDictionaryWriter dictionaryWriter, TransitionResult result) =>
+    private string? userDictionaryPath;
+    private IUserDictionaryWriter? dictionaryWriter;
+
+    public void ApplyUserDictionaryPath(string path)
+    {
+        if (string.Equals(userDictionaryPath, path, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        dictionaryWriter?.Dispose();
+        dictionaryWriter = writerFactory.Create(path);
+        userDictionaryPath = path;
+    }
+
+    public void Execute(TransitionResult result)
+    {
         Results.Add(result);
+    }
+
+    public void Dispose()
+    {
+        dictionaryWriter?.Dispose();
+    }
 }
 
 internal sealed class TestConfigPathProvider : IConfigPathProvider
@@ -140,26 +163,23 @@ internal sealed class ControllerTestContext : IDisposable
         Watcher = new FakeConfigWatcher(config, dictionary);
         Hook = new FakeKeyboardHook();
         WriterFactory = new FakeUserDictionaryWriterFactory();
-        EffectExecutor = new FakeEffectExecutor();
+        EffectDispatcher = new FakeEffectDispatcher(WriterFactory);
         var keyboard = new FakeKeyboardInput(Hook);
-        var activeProcess = new FakeActiveProcess();
-        Controller = new SkkController(
-            WriterFactory.Create,
-            Watcher,
-            keyboard,
-            EffectExecutor.Execute,
+        var session = new SkkEngineSession(
             EngineFunctions.CreateInitialState,
             EngineFunctions.CreateConfig,
             EngineFunctions.CreateDictionary,
             EngineFunctions.ProcessKey,
-            EngineFunctions.CreateUiSnapshot);
+            EngineFunctions.CreateUiSnapshot,
+            EffectDispatcher);
+        Controller = new SkkController(Watcher, keyboard, session);
     }
 
     internal SkkController Controller { get; }
     internal FakeConfigWatcher Watcher { get; }
     internal FakeKeyboardHook Hook { get; }
     internal FakeUserDictionaryWriterFactory WriterFactory { get; }
-    internal FakeEffectExecutor EffectExecutor { get; }
+    internal FakeEffectDispatcher EffectDispatcher { get; }
 
     public void Dispose() => Controller.Dispose();
 }

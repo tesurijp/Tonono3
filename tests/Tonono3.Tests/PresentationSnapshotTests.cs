@@ -62,6 +62,7 @@ public sealed class PresentationSnapshotTests
         var controller = context.Controller;
         var snapshots = new List<SkkUiSnapshot>();
         controller.UiUpdated += snapshots.Add;
+        controller.Start();
 
         controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkJ, control: true), null);
         controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkK, 'K', shift: true), null);

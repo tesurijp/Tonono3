@@ -12,18 +12,19 @@ public sealed class SkkEngineSession(
     CreateConfigFunc createConfig,
     CreateDictionaryFunc createDictionary,
     ProcessKeyFunc processKey,
-    ReloadConfigFunc reloadConfig,
     CreateUiSnapshotFunc createUiSnapshot,
     IEngineEffectDispatcher effectDispatcher ) : ISkkEngineSession
 {
     private EngineState state = createInitialState();
-    public AppConfig CurrentConfig { get; private set; } = reloadConfig();
+    //  SkkController の開始時にApplyRuntimeが呼ばれることで以下のフィールドは必ず初期化される。
+    public AppConfig CurrentConfig { get; private set; } = null!;
     private EngineConfig config = null!;
     private DictionarySnapshot dictionary = null!;
 
     public void ApplyRuntime(AppConfig appconfig, SkkDictionarySnapshot dictionarySnapshot)
     {
-        config = createConfig(appconfig.RomajiTable, appconfig.MoraModifier, appconfig.MoraAutoComplete, appconfig.ZenkakuTable, appconfig.ViCompatibleApps);
+        CurrentConfig = appconfig;
+        config = createConfig(CurrentConfig.RomajiTable, CurrentConfig.MoraModifier, CurrentConfig.MoraAutoComplete, CurrentConfig.ZenkakuTable, CurrentConfig.ViCompatibleApps);
         dictionary = createDictionary(dictionarySnapshot.Main, dictionarySnapshot.User);
         effectDispatcher.ApplyUserDictionaryPath(CurrentConfig.UserDictionaryPath);
     }
