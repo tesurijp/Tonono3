@@ -60,7 +60,7 @@ internal sealed class FakeUserDictionaryWriterFactory
     }
 }
 
-internal sealed class FakeConfigWatcher : IConfigWatcher
+internal sealed class FakeConfigWatcher(AppConfig config, SkkDictionarySnapshot dict) : IConfigWatcher
 {
     public event Action<long, AppConfig, SkkDictionarySnapshot>? RuntimeReloaded;
     internal int StartCount { get; private set; }
@@ -71,6 +71,8 @@ internal sealed class FakeConfigWatcher : IConfigWatcher
 
     internal void Publish(long generation, AppConfig config, SkkDictionarySnapshot dictionary) =>
         RuntimeReloaded?.Invoke(generation, config, dictionary);
+
+    public (AppConfig, SkkDictionarySnapshot) LoadRuntime() => (config, dict);
 }
 
 internal sealed class FakeKeyboardHook : IKeyboardHook
@@ -135,17 +137,13 @@ internal sealed class ControllerTestContext : IDisposable
 {
     internal ControllerTestContext(AppConfig config, SkkDictionarySnapshot dictionary)
     {
-        Watcher = new FakeConfigWatcher();
+        Watcher = new FakeConfigWatcher(config, dictionary);
         Hook = new FakeKeyboardHook();
         WriterFactory = new FakeUserDictionaryWriterFactory();
         EffectExecutor = new FakeEffectExecutor();
-        var configLoader = new StubConfigLoader(() => config);
-        var dictionaryLoader = new StubDictionaryLoader((_, _) => dictionary);
         var keyboard = new FakeKeyboardInput(Hook);
         var activeProcess = new FakeActiveProcess();
         Controller = new SkkController(
-            configLoader.Reload,
-            dictionaryLoader.Load,
             WriterFactory.Create,
             Watcher,
             keyboard,

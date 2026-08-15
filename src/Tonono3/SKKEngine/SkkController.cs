@@ -29,8 +29,6 @@ public sealed class SkkController : ISkkController
     private long uiVersion;
 
     public SkkController(
-        ReloadConfigFunc reloadConfig,
-        LoadSkkDictionaryFunc loadSkkDictionary,
         CreateUserDictionaryWriterFunc createUserDictionaryWriter,
         IConfigWatcher configWatcher,
         ISkkKeyHandler keyHandler,
@@ -50,10 +48,7 @@ public sealed class SkkController : ISkkController
         this.processKey = processKey;
         this.createUiSnapshot = createUiSnapshot;
 
-        currentConfig = reloadConfig();
-        var dictionary = loadSkkDictionary(
-            currentConfig.DictionaryPaths,
-            currentConfig.UserDictionaryPath);
+        (currentConfig, var dictionary) = configWatcher.LoadRuntime();
         currentDictionary = ToEngineDictionary(dictionary);
         currentEngineConfig = ToEngineConfig(currentConfig);
         currentState = createInitialState();

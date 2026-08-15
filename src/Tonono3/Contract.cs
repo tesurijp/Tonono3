@@ -22,6 +22,7 @@ public interface IUserDictionaryWriter : IDisposable
 public interface IConfigWatcher : IDisposable
 {
     event Action<long, AppConfig, SkkDictionarySnapshot>? RuntimeReloaded;
+    (AppConfig, SkkDictionarySnapshot) LoadRuntime();
     void Start();
 }
 public interface ISkkKeyHandler : IDisposable

@@ -42,7 +42,7 @@ public sealed class ConfigWatcher(
         }
     }
 
-    private (AppConfig Config, SkkDictionarySnapshot Dictionary) LoadRuntime()
+    public (AppConfig, SkkDictionarySnapshot) LoadRuntime()
     {
         var config = reloadConfig();
         return (config, loadSkkDictionary(config.DictionaryPaths, config.UserDictionaryPath));
