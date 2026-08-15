@@ -88,10 +88,17 @@ internal sealed class FakeKeyboardHook : IKeyboardHook
     internal bool? Publish(int value) => func?.Invoke(value);
 }
 
-internal sealed class FakeKeyboardInput
+internal sealed class FakeKeyboardInput(IKeyboardHook hook ) : ISkkKeyHandler
 {
-    public (bool Control, bool Shift) GetMetaKeyState() => (false, false);
-    public char VkToChar(int vkCode, bool shift) => '\0';
+
+    public void Start(Func<KeyCommand, string?, bool> process)
+    {
+    }
+
+    public void Dispose()
+    {
+        hook.Dispose();
+    }
 }
 
 internal sealed class FakeActiveProcess
@@ -134,20 +141,16 @@ internal sealed class ControllerTestContext : IDisposable
         EffectExecutor = new FakeEffectExecutor();
         var configLoader = new StubConfigLoader(() => config);
         var dictionaryLoader = new StubDictionaryLoader((_, _) => dictionary);
-        var keyboard = new FakeKeyboardInput();
+        var keyboard = new FakeKeyboardInput(Hook);
         var activeProcess = new FakeActiveProcess();
         Controller = new SkkController(
             configLoader.Reload,
             dictionaryLoader.Load,
             WriterFactory.Create,
             Watcher,
-            Hook,
-            keyboard.GetMetaKeyState,
-            keyboard.VkToChar,
-            activeProcess.GetActiveProcessPath,
+            keyboard,
             EffectExecutor.Execute,
             EngineFunctions.CreateInitialState,
-            EngineFunctions.CreateKeyCommand,
             EngineFunctions.CreateConfig,
             EngineFunctions.CreateDictionary,
             EngineFunctions.ProcessKey,

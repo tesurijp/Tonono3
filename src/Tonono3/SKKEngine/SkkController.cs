@@ -11,13 +11,9 @@ public sealed class SkkController : ISkkController
     private readonly Lock gate = new();
     private readonly CreateUserDictionaryWriterFunc createUserDictionaryWriter;
     private readonly IConfigWatcher configWatcher;
-    private readonly IKeyboardHook hook;
-    private readonly GetMetaKeyStateFunc getMetaKeyState;
-    private readonly ConvertVirtualKeyToCharFunc convertVirtualKeyToChar;
-    private readonly GetActiveProcessPathFunc getActiveProcessPath;
     private readonly ExecuteEngineEffectsFunc executeEngineEffectsOrg;
     private Action<TransitionResult> executeEngineEffects;
-    private readonly CreateKeyCommandFunc createKeyCommand;
+    private readonly ISkkKeyHandler keyHandler;
     private readonly CreateConfigFunc createConfig;
     private readonly CreateDictionaryFunc createDictionary;
     private readonly ProcessKeyFunc processKey;
@@ -37,13 +33,9 @@ public sealed class SkkController : ISkkController
         LoadSkkDictionaryFunc loadSkkDictionary,
         CreateUserDictionaryWriterFunc createUserDictionaryWriter,
         IConfigWatcher configWatcher,
-        IKeyboardHook hook,
-        GetMetaKeyStateFunc getMetaKeyState,
-        ConvertVirtualKeyToCharFunc convertVirtualKeyToChar,
-        GetActiveProcessPathFunc getActiveProcessPath,
+        ISkkKeyHandler keyHandler,
         ExecuteEngineEffectsFunc executeEngineEffects,
         CreateInitialStateFunc createInitialState,
-        CreateKeyCommandFunc createKeyCommand,
         CreateConfigFunc createConfig,
         CreateDictionaryFunc createDictionary,
         ProcessKeyFunc processKey,
@@ -51,12 +43,8 @@ public sealed class SkkController : ISkkController
     {
         this.createUserDictionaryWriter = createUserDictionaryWriter;
         this.configWatcher = configWatcher;
-        this.hook = hook;
-        this.getMetaKeyState = getMetaKeyState;
-        this.convertVirtualKeyToChar = convertVirtualKeyToChar;
-        this.getActiveProcessPath = getActiveProcessPath;
         this.executeEngineEffectsOrg = executeEngineEffects;
-        this.createKeyCommand = createKeyCommand;
+        this.keyHandler = keyHandler;
         this.createConfig = createConfig;
         this.createDictionary = createDictionary;
         this.processKey = processKey;
@@ -110,7 +98,7 @@ public sealed class SkkController : ISkkController
         }
 
         configWatcher.Start();
-        hook.Install(OnKeyIntercepted);
+        keyHandler.Start(ProcessCommand);
     }
 
     private void OnRuntimeReloaded(
@@ -126,16 +114,6 @@ public sealed class SkkController : ISkkController
             }
             pendingRuntime = new(generation, config, dictionary);
         }
-    }
-
-    private bool OnKeyIntercepted(int keyCode)
-    {
-        var (controlPressed, shiftPressed) = getMetaKeyState();
-
-        var ch = keyCode == SkkKeyConstants.VkG && controlPressed ? '\0' :
-            convertVirtualKeyToChar(keyCode, shiftPressed);
-        var command = createKeyCommand(keyCode, shiftPressed, controlPressed, ch);
-        return ProcessCommand(command, getActiveProcessPath());
     }
 
     public bool ProcessCommand(KeyCommand command, string? activeProcessPath)
@@ -222,7 +200,7 @@ public sealed class SkkController : ISkkController
             UiUpdated = null;
         }
 
-        hook.Dispose();
+        keyHandler.Dispose();
         configWatcher.Dispose();
         dictionaryWriter.Dispose();
         GC.SuppressFinalize(this);

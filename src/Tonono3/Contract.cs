@@ -24,6 +24,10 @@ public interface IConfigWatcher : IDisposable
     event Action<long, AppConfig, SkkDictionarySnapshot>? RuntimeReloaded;
     void Start();
 }
+public interface ISkkKeyHandler : IDisposable
+{
+    void Start(Func<KeyCommand, string?, bool> process);
+}
 
 public interface IKeyboardHook : IDisposable
 {
