@@ -4,7 +4,7 @@ open System
 
 module internal Engine =
     open KeyCode
-    open EngineRuntime
+    open CommandContext
     open EngineComposition
 
     let rec private processKey (config: EngineConfig) (activePath: string) (command: KeyCommand) (runtime: Runtime) =

@@ -4,7 +4,7 @@ open System
 
 module internal EngineComposition =
     open KeyCode
-    open EngineRuntime
+    open CommandContext
 
     let handleKana (kana: string) (runtime: Runtime) =
         let output = if mode runtime = InputMode.Katakana then KanaConverter.hiraToKatakana kana else kana

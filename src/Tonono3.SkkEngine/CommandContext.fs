@@ -2,7 +2,7 @@ namespace Tonono3.SKKEngine
 
 open System
 
-module internal EngineRuntime =
+module internal CommandContext =
     type Runtime =
         { State: CoreState
           Dictionary: DictionarySnapshot

@@ -6,12 +6,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="KeyConstants.fs" />
-    <Compile Include="Contracts.fs" />
-    <Compile Include="StateTypes.fs" />
-    <Compile Include="Types.fs" />
+    <Compile Include="EngineTypes.fs" />
     <Compile Include="KanaConverter.fs" />
     <Compile Include="Dictionary.fs" />
-    <Compile Include="EngineRuntime.fs" />
+    <Compile Include="CommandContext.fs" />
     <Compile Include="EngineComposition.fs" />
     <Compile Include="Engine.fs" />
     <Compile Include="Presentation.fs" />
