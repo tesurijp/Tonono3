@@ -1,0 +1,65 @@
+name: Native AOT build
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.runtime }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: win-x64
+            architecture: x64
+          - runtime: win-arm64
+            architecture: arm64
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish Native AOT application
+        run: >-
+          dotnet publish src/Tonono3/Tonono3.csproj
+          --configuration NativeAot
+          --runtime ${{ matrix.runtime }}
+          --output publish/${{ matrix.runtime }}
+
+      - name: Keep only executable and library files
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path "publish/${{ matrix.runtime }}" -Recurse -File |
+            Where-Object { $_.Extension -notin '.exe', '.dll' } |
+            Remove-Item -Force
+
+      - name: Create distribution archive
+        shell: pwsh
+        run: |
+          $publishDirectory = "publish/${{ matrix.runtime }}"
+          $archivePath = "publish/Tonono3.${{ matrix.architecture }}.zip"
+
+          Copy-Item -LiteralPath "src/Tonono3/resources/config.yaml" -Destination $publishDirectory
+
+          $filesToArchive = Get-ChildItem -Path $publishDirectory -File
+          Compress-Archive -LiteralPath $filesToArchive.FullName -DestinationPath $archivePath
+
+      - name: Upload ${{ matrix.runtime }} artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Tonono3-${{ matrix.architecture }}
+          path: publish/Tonono3.${{ matrix.architecture }}.zip
+          if-no-files-found: error
+          retention-days: 7
+          archive: false
