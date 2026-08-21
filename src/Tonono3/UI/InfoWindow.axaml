@@ -24,8 +24,8 @@
                 BorderBrush="#FFD0D7DE"
                 BorderThickness="1">
             <StackPanel Spacing="2">
-                <TextBlock Text="Tonono3 SKK-Like System" FontSize="16" FontWeight="Bold" />
-                <TextBlock Text="Version 1.1.0"/>
+                <TextBlock Text="Tonono3 SKK-Like Input System" FontSize="16" FontWeight="Bold" />
+                <TextBlock Text="{CompiledBinding VersionInfo}"/>
                 <TextBlock Text=".NET 10 (C#) / AvaloniaUI" />
             </StackPanel>
         </Border>

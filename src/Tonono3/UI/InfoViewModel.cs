@@ -17,6 +17,7 @@ public sealed class InfoCharStringPairRow
 
 public class InfoViewModel(AppConfig cfg, string configPath)
 {
+    public static string VersionInfo => $"Version {BuildInfo.Version} ( SkkEngine version {SkkEngine.BuildInfo.Version}; Interop version {Interop.BuildInfo.Version} )";
     public string ConfigPath => configPath;
     public IEnumerable<InfoStringPairRow> RomajiEntries => cfg.RomajiTable
         .Select(kv => new InfoStringPairRow { Key = kv.Key, Value = kv.Value });

@@ -1,0 +1,33 @@
+<Project>
+    <Target Name="GenerateVersionClassFSharp" BeforeTargets="BeforeCompile">
+
+        <PropertyGroup>
+            <Version Condition="'$(Version)' == ''">1.0.0</Version>
+
+            <GeneratedVersionFilePath Condition="'$(MSBuildProjectExtension)' == '.fsproj'" >$(IntermediateOutputPath)GeneratedVersion.fs</GeneratedVersionFilePath>
+            <GeneratedVersionCode Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
+// &lt;auto-generated /&gt;
+namespace $(MSBuildProjectName)
+
+module BuildInfo =
+    [&lt;Literal&gt;]
+    let Version = &quot;$(Version)&quot;
+            </GeneratedVersionCode>
+
+            <GeneratedVersionFilePath Condition="'$(MSBuildProjectExtension)' == '.csproj'" >$(IntermediateOutputPath)GeneratedVersion.cs</GeneratedVersionFilePath>
+            <GeneratedVersionCode Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+// &lt;auto-generated /&gt;
+namespace $(MSBuildProjectName) %3b
+public static class BuildInfo {
+  public const string Version = &quot;$(Version)&quot; %3b
+}
+            </GeneratedVersionCode>
+        </PropertyGroup>
+
+        <WriteLinesToFile File="$(GeneratedVersionFilePath)" Lines="$(GeneratedVersionCode)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+        <ItemGroup>
+            <Compile Include="$(GeneratedVersionFilePath)" />
+        </ItemGroup>
+    </Target>
+</Project>
