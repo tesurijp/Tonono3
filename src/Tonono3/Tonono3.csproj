@@ -2,13 +2,6 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <Configurations>Debug;Release;NativeAot</Configurations>
-    <AssemblyName>Tonono3</AssemblyName>
-    <RootNamespace>Tonono3</RootNamespace>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
     <NoWarn>$(NoWarn);AVLN3001</NoWarn>
     <ApplicationIcon>TONONO.ICO</ApplicationIcon>
     <ResDir>resources\</ResDir>
@@ -21,7 +14,7 @@
 
   <PropertyGroup Condition="'$(Configuration)' == 'NativeAot'">
     <PublishAot>true</PublishAot>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <SelfContained>true</SelfContained>
     <PublishDir>$(NativeAotPublishDir)</PublishDir>
   </PropertyGroup>
@@ -37,8 +30,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
-    <PackageReference Include="tsr-di" Version="1.*" PrivateAssets="all" />
-    <PackageReference Include="tsr-di.Attribute" Version="1.*" />
+    <PackageReference Include="tsr-di" Version="1.*" />
     <PackageReference Include="VYaml" Version="1.4.0" />
   </ItemGroup>
 
@@ -74,12 +66,6 @@
       <FilesNeedCopy Include="$(ResDir)**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(FilesNeedCopy)" DestinationFiles="@(FilesNeedCopy->'$(OutputPath)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>
-
-  <Target Name="UseSharedTsrDiAttributes" AfterTargets="_TSR_DI_AttributeCheck" BeforeTargets="CoreCompile">
-    <PropertyGroup>
-      <DefineConstants>$([System.String]::Copy('$(DefineConstants)').Replace(';TSR_DI_NEED_INTERNAL_ATTRIBUTE', '').Replace('TSR_DI_NEED_INTERNAL_ATTRIBUTE;', '').Replace('TSR_DI_NEED_INTERNAL_ATTRIBUTE', ''))</DefineConstants>
-    </PropertyGroup>
   </Target>
 
 </Project>

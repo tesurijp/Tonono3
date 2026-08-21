@@ -4,8 +4,16 @@
     <BuildType Name="NativeAot" />
     <BuildType Name="Release" />
   </Configurations>
-  <Project Path="src\Tonono3\Tonono3.csproj" />
+  <Folder Name="/Common/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="LICENSE.txt" />
+    <File Path="README.md" />
+  </Folder>
   <Project Path="src\Tonono3.Interop\Tonono3.Interop.csproj" />
   <Project Path="src\Tonono3.SkkEngine\Tonono3.SkkEngine.fsproj" />
+  <Project Path="src\Tonono3\Tonono3.csproj" />
   <Project Path="tests\Tonono3.Tests\Tonono3.Tests.csproj" />
 </Solution>
