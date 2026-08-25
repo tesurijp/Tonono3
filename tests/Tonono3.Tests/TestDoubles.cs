@@ -193,8 +193,8 @@ internal sealed class FakeTononoUi : ITononoUi
 {
     public WindowIcon? Icon { get; set; }
     internal int CloseCount { get; private set; }
-    internal List<SkkUiSnapshot> Snapshots { get; } = [];
-    public void ApplySnapshot(SkkUiSnapshot snapshot) => Snapshots.Add(snapshot);
+    internal List<UiSnapshot> Snapshots { get; } = [];
+    public void ApplySnapshot(UiSnapshot snapshot) => Snapshots.Add(snapshot);
     public void Close() => CloseCount++;
 }
 

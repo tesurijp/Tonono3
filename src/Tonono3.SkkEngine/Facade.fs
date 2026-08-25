@@ -42,4 +42,4 @@ type SkkEngineFacade private () =
         Engine.run state config dictionary command activeProcessPath
 
     [<ServiceFunction>]
-    static member CreateUiSnapshot(state) = Presentation.create state
+    static member CreateUiSnapshot(state, version) = Presentation.create state version

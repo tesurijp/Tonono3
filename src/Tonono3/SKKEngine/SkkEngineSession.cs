@@ -1,4 +1,3 @@
-using System;
 using Tonono3.AutoDefined;
 using tsr_di;
 
@@ -37,21 +36,6 @@ public sealed class SkkEngineSession(
         effectDispatcher.Execute(result);
         return result;
     }
-
-
-    public SkkUiSnapshot CreateUiSnapshot(long version)
-    {
-        var snapshot = createUiSnapshot(state);
-        return new(
-            version,
-            snapshot.IsVisible,
-            snapshot.StatusText,
-            snapshot.IsInRegistrationMode,
-            snapshot.RegistrationReading,
-            snapshot.RegistrationWord,
-            snapshot.Composition,
-            snapshot.CandidateList);
-    }
-
+    public UiSnapshot CreateUiSnapshot(long version) => createUiSnapshot(state, version);
     public void Dispose() => effectDispatcher.Dispose();
 }

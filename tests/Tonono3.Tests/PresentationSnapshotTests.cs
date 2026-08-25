@@ -8,7 +8,7 @@ public sealed class PresentationSnapshotTests
     [TestMethod]
     public void InitialStateProducesHiddenSnapshot()
     {
-        var snapshot = EngineFunctions.CreateUiSnapshot(EngineFunctions.CreateInitialState());
+        var snapshot = EngineFunctions.CreateUiSnapshot(EngineFunctions.CreateInitialState(), 0);
 
         Assert.IsFalse(snapshot.IsVisible);
         Assert.AreEqual("[？]", snapshot.StatusText);
@@ -23,7 +23,7 @@ public sealed class PresentationSnapshotTests
             "n", "かん", InputMode.Hiragana, true, false, null, "",
             [], -1, ["かんじ", "かんせい"], 1, []);
 
-        var snapshot = EngineFunctions.CreateUiSnapshot(state);
+        var snapshot = EngineFunctions.CreateUiSnapshot(state, 0);
 
         Assert.IsTrue(snapshot.IsVisible);
         Assert.AreEqual("[あ]", snapshot.StatusText);
@@ -42,7 +42,7 @@ public sealed class PresentationSnapshotTests
                 new RegistrationFrame("inner", InputMode.Katakana, "内")
             ]);
 
-        var snapshot = EngineFunctions.CreateUiSnapshot(state);
+        var snapshot = EngineFunctions.CreateUiSnapshot(state, 0);
 
         Assert.AreEqual("[[[あ]]]", snapshot.StatusText);
         Assert.IsTrue(snapshot.IsInRegistrationMode);
@@ -60,7 +60,7 @@ public sealed class PresentationSnapshotTests
         var dictionary = env.LoadDictionary(config);
         using var context = new ControllerTestContext(config, dictionary);
         var controller = context.Controller;
-        var snapshots = new List<SkkUiSnapshot>();
+        var snapshots = new List<UiSnapshot>();
         controller.UiUpdated += snapshots.Add;
         controller.Start();
 

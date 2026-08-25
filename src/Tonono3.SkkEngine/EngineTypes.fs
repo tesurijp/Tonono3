@@ -158,9 +158,10 @@ type TransitionResult(state: EngineState, dictionary: DictionarySnapshot, handle
     member _.Effects = Array.copy effects
 
 [<Sealed>]
-type UiSnapshot(
+type UiSnapshot(version : int64,
     isVisible: bool, statusText: string, isRegistration: bool, registrationReading: string,
     registrationWord: string, composition: string, candidateList: string) =
+    member _.Version = version
     member _.IsVisible = isVisible
     member _.StatusText = statusText
     member _.IsInRegistrationMode = isRegistration

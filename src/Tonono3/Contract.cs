@@ -38,7 +38,7 @@ public interface ISkkEngineSession : IDisposable
 {
     void ApplyRuntime(AppConfig config, DictionarySnapshot dictionary);
     TransitionResult Process(KeyCommand command, string? activeProcessPath);
-    SkkUiSnapshot CreateUiSnapshot(long version);
+    UiSnapshot CreateUiSnapshot(long version);
     AppConfig CurrentConfig { get; }
 }
 
@@ -50,8 +50,8 @@ public interface IEngineEffectDispatcher : IDisposable
 
 public interface ISkkController : IDisposable
 {
-    event Action<SkkUiSnapshot>? UiUpdated;
-    SkkUiSnapshot CurrentUiSnapshot { get; }
+    event Action<UiSnapshot>? UiUpdated;
+    UiSnapshot CurrentUiSnapshot { get; }
     AppConfig CurrentConfig { get; }
     void Start();
     bool ProcessCommand(KeyCommand command, string? activeProcessPath);
@@ -60,7 +60,7 @@ public interface ISkkController : IDisposable
 public interface ITononoUi
 {
     WindowIcon? Icon { get; set; }
-    void ApplySnapshot(SkkUiSnapshot snapshot);
+    void ApplySnapshot(UiSnapshot snapshot);
     void Close();
 }
 

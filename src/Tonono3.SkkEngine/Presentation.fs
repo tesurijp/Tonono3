@@ -4,7 +4,7 @@ open System
 open System.Text
 
 module internal Presentation =
-    let create (state: EngineState) =
+    let create (state: EngineState) (version: int64 ) =
         let core = state.Core
         let depth = core.Registrations.Length
         let inputMode = StateModel.inputMode core.Input
@@ -40,4 +40,4 @@ module internal Presentation =
                 |> String.concat ""
             | _ -> ""
         let reading, word = match core.Registrations with current :: _ -> current.Reading, current.Word | [] -> "", ""
-        UiSnapshot(visible, status, not core.Registrations.IsEmpty, reading, word, compositionText, candidateList)
+        UiSnapshot(version, visible, status, not core.Registrations.IsEmpty, reading, word, compositionText, candidateList)

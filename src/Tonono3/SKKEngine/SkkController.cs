@@ -13,7 +13,7 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
     private bool disposed;
     private long uiVersion;
 
-    public event Action<SkkUiSnapshot>? UiUpdated;
+    public event Action<UiSnapshot>? UiUpdated;
 
     private static T GetField<T>(Func<T> getter)
     {
@@ -22,7 +22,7 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
             return getter();
         }
     }
-    public SkkUiSnapshot CurrentUiSnapshot => GetField(() => skkEngineSession.CreateUiSnapshot(uiVersion));
+    public UiSnapshot CurrentUiSnapshot => GetField(() => skkEngineSession.CreateUiSnapshot(uiVersion));
     public AppConfig CurrentConfig => GetField(() => skkEngineSession.CurrentConfig);
     public void Start()
     {

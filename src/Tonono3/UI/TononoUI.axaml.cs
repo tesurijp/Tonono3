@@ -38,7 +38,7 @@ public partial class TononoUI : Window, ITononoUi
         };
     }
 
-    public void ApplySnapshot(SkkUiSnapshot snapshot)
+    public void ApplySnapshot(UiSnapshot snapshot)
     {
         Dispatcher.UIThread.Post(() =>
         {
