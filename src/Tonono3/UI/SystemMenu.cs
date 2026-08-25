@@ -8,8 +8,7 @@ public sealed class SystemMenu : ISystemMenu
 {
     private readonly TrayIcon trayicon;
     private Window? infoWindow;
-    private readonly ISkkController controller;
-    private readonly CreateInfoWindowFunc createInfoWindow;
+    private readonly Action showInfo;
 
     public SystemMenu(
         RestartApplicationFunc restart,
@@ -19,13 +18,13 @@ public sealed class SystemMenu : ISystemMenu
         CreateInfoWindowFunc createInfoWindow,
         WindowIcon appIcon)
     {
-        this.controller = controller;
-        this.createInfoWindow = createInfoWindow;
+        showInfo = () => ShowInfoWindow(createInfoWindow, controller);
         trayicon = new TrayIcon
         {
             Icon = appIcon,
             ToolTipText = "Tonono",
             Menu = CreateMenu(
+                showInfo,
                 () => restart(),
                 () => shutdown(),
                 () => openConfigFile()),
@@ -33,14 +32,15 @@ public sealed class SystemMenu : ISystemMenu
         };
     }
 
-    private NativeMenu CreateMenu(
+    private static NativeMenu CreateMenu(
+        Action showInfo,
         Action restartAction,
         Action shutdownAction,
         Action openConfigAction)
     {
         var menu = new NativeMenu
         {
-            makeMenu("情報", ShowInfoWindow),
+            makeMenu("情報", showInfo),
             makeMenu("設定", openConfigAction),
             makeMenu("再起動", restartAction),
             new NativeMenuItemSeparator(),
@@ -55,7 +55,7 @@ public sealed class SystemMenu : ISystemMenu
         }
     }
 
-    private void ShowInfoWindow()
+    private void ShowInfoWindow(CreateInfoWindowFunc createInfoWindow, ISkkController controller)
     {
         if (infoWindow is { IsVisible: true })
         {
