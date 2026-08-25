@@ -7,7 +7,7 @@ module internal Engine =
     open CommandContext
     open EngineComposition
 
-    let rec private processKey (config: EngineConfig) (activePath: string) (command: KeyCommand) (runtime: Runtime) =
+    let rec private processKey (config: AppConfig) (activePath: string) (command: KeyCommand) (runtime: Runtime) =
         match preCheck activePath config command runtime with
         | Some result -> result
         | None ->
@@ -23,7 +23,7 @@ module internal Engine =
             | None, _, Idle _ -> processIdle config command runtime
             | None, _, Composing _ -> false, runtime
 
-    and private processIdle (config: EngineConfig) (command: KeyCommand) (runtime: Runtime) =
+    and private processIdle (config: AppConfig) (command: KeyCommand) (runtime: Runtime) =
         match command.Control, command.VkCode, command.Shift with
         | true, _, _ -> commonControl command runtime
         | false, L, false -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Disabled
@@ -35,7 +35,7 @@ module internal Engine =
         | false, Space, _ when canStartConversion runtime -> true, startConversion config runtime
         | _ -> handleChar config command.Character runtime
 
-    and private processComposition (config: EngineConfig) (command: KeyCommand) (runtime: Runtime) =
+    and private processComposition (config: AppConfig) (command: KeyCommand) (runtime: Runtime) =
         let runtime =
             match composition runtime with
             | Some value when value.Completion.IsSome && command.VkCode <> Tab && command.VkCode <> Space -> withComposition { value with Completion = None } runtime
@@ -68,7 +68,7 @@ module internal Engine =
         | false, Back, _ -> handleBackspace runtime
         | _ -> handleChar config command.Character runtime
 
-    and private processRegistration (config: EngineConfig) (command: KeyCommand) (runtime: Runtime) =
+    and private processRegistration (config: AppConfig) (command: KeyCommand) (runtime: Runtime) =
         match command.Control, command.VkCode with
         | _, Escape -> true, cancelRegistration runtime
         | true, J -> true, commitAll runtime
@@ -78,7 +78,7 @@ module internal Engine =
         | false, Back -> true, registrationBackspace runtime
         | _ -> processIdle config command runtime
 
-    and private processConversion (config: EngineConfig) (activePath: string) (command: KeyCommand) (runtime: Runtime) =
+    and private processConversion (config: AppConfig) (activePath: string) (command: KeyCommand) (runtime: Runtime) =
         let value = composition runtime |> Option.get
         let selection = value.Candidates |> Option.get
         let pageStart = selection.Index / 7 * 7
@@ -115,7 +115,7 @@ module internal Engine =
                 let _, next = processKey config activePath command committed
                 true, next
 
-    let run (state: EngineState) (config: EngineConfig) (dictionary: DictionarySnapshot) (command: KeyCommand) (activePath: string) =
+    let run (state: EngineState) (config: AppConfig) (dictionary: DictionarySnapshot) (command: KeyCommand) (activePath: string) =
         let initial = { State = state.Core; Dictionary = dictionary; Effects = [] }
         let handled, result = processKey config (if isNull activePath then "" else activePath) command initial
         TransitionResult(EngineState(result.State), result.Dictionary, handled, result.Effects |> List.rev |> List.toArray)

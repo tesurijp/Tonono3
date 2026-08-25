@@ -1,5 +1,6 @@
 namespace Tonono3.SKKEngine
 
+open System
 open System.Collections.Generic
 open System.Collections.Immutable
 
@@ -84,14 +85,41 @@ type EngineState internal (core: CoreState) =
     member _.RegistrationStack = core.Registrations |> List.rev |> List.toArray
 
 [<Sealed>]
-type EngineConfig internal (
+type AppConfig internal (
     romaji: Map<string,string>, mora: Map<string,string>, moraComplete: Map<string,string>,
-    zenkaku: Map<char,string>, viApps: Set<string>) =
+    zenkaku: Map<char,string>, dictionaryPaths: string array, userDictionaryPath: string,
+    viAppEntries: string array) =
+    let stringEntries source =
+        source
+        |> Map.toArray
+        |> Array.map (fun (key, value) -> KeyValuePair(key, value))
+    let charEntries source =
+        source
+        |> Map.toArray
+        |> Array.map (fun (key, value) -> KeyValuePair(key, value))
     member internal _.Romaji = romaji
     member internal _.Mora = mora
     member internal _.MoraComplete = moraComplete
     member internal _.Zenkaku = zenkaku
-    member internal _.ViApps = viApps
+    member internal _.DictionaryPathEntries = dictionaryPaths
+    member internal _.ViAppEntries = viAppEntries
+    member _.RomajiEntries = stringEntries romaji
+    member _.MoraEntries = stringEntries mora
+    member _.MoraCompleteEntries = stringEntries moraComplete
+    member _.ZenkakuEntries = charEntries zenkaku
+    member _.DictionaryPaths = Array.copy dictionaryPaths
+    member _.UserDictionaryPath = userDictionaryPath
+    member _.ViCompatibleApps = Array.copy viAppEntries
+    member _.HasError =
+        Map.isEmpty romaji || Map.isEmpty mora || Map.isEmpty zenkaku || Array.isEmpty dictionaryPaths
+    member this.HasChange(other: AppConfig) =
+        this.UserDictionaryPath <> other.UserDictionaryPath ||
+        this.Romaji <> other.Romaji ||
+        this.Mora <> other.Mora ||
+        this.MoraComplete <> other.MoraComplete ||
+        this.Zenkaku <> other.Zenkaku ||
+        this.DictionaryPathEntries <> other.DictionaryPathEntries ||
+        this.ViAppEntries <> other.ViAppEntries
 
 [<Sealed>]
 type DictionarySnapshot internal (main: Map<string,string list>, user: Map<string,string list>) =
@@ -102,12 +130,6 @@ type DictionarySnapshot internal (main: Map<string,string list>, user: Map<strin
     member internal _.MainMap = main
     member internal _.UserMap = user
     member _.User = toImmutable user
-
-[<Sealed>]
-type ParsedDictionaryEntry(isValid: bool, reading: string, candidates: string array) =
-    member _.IsValid = isValid
-    member _.Reading = reading
-    member _.Candidates = Array.copy candidates
 
 [<AbstractClass>]
 type EngineEffect() = class end

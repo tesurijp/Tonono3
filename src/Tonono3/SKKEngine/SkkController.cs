@@ -42,7 +42,7 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
         keyHandler.Start(ProcessCommand);
     }
 
-    private void OnRuntimeReloaded( long generation, AppConfig config, SkkDictionarySnapshot dictionary)
+    private void OnRuntimeReloaded( long generation, AppConfig config, DictionarySnapshot dictionary)
     {
         lock (gate)
         {
@@ -103,5 +103,5 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
     private sealed record PendingRuntime(
         long Generation,
         AppConfig Config,
-        SkkDictionarySnapshot Dictionary);
+        DictionarySnapshot Dictionary);
 }

@@ -25,7 +25,7 @@ public sealed class ConfigWatcher(
     private bool disposed;
     private string? activeConfigPath = Path.GetFullPath(paths.ConfigPath);
 
-    public event Action<long, AppConfig, SkkDictionarySnapshot>? RuntimeReloaded;
+    public event Action<long, AppConfig, DictionarySnapshot>? RuntimeReloaded;
 
     public void Start()
     {
@@ -42,7 +42,7 @@ public sealed class ConfigWatcher(
         }
     }
 
-    public (AppConfig, SkkDictionarySnapshot) LoadRuntime()
+    public (AppConfig, DictionarySnapshot) LoadRuntime()
     {
         var config = reloadConfig();
         return (config, loadSkkDictionary(config.DictionaryPaths, config.UserDictionaryPath));

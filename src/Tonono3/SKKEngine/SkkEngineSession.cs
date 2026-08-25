@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Tonono3.AutoDefined;
 using tsr_di;
 
@@ -9,8 +7,6 @@ namespace Tonono3.SKKEngine;
 [ServiceClass]
 public sealed class SkkEngineSession(
     CreateInitialStateFunc createInitialState,
-    CreateConfigFunc createConfig,
-    CreateDictionaryFunc createDictionary,
     ProcessKeyFunc processKey,
     CreateUiSnapshotFunc createUiSnapshot,
     IEngineEffectDispatcher effectDispatcher ) : ISkkEngineSession
@@ -18,14 +14,12 @@ public sealed class SkkEngineSession(
     private EngineState state = createInitialState();
     //  SkkController の開始時にApplyRuntimeが呼ばれることで以下のフィールドは必ず初期化される。
     public AppConfig CurrentConfig { get; private set; } = null!;
-    private EngineConfig config = null!;
     private DictionarySnapshot dictionary = null!;
 
-    public void ApplyRuntime(AppConfig appconfig, SkkDictionarySnapshot dictionarySnapshot)
+    public void ApplyRuntime(AppConfig config, DictionarySnapshot dictionary)
     {
-        CurrentConfig = appconfig;
-        config = createConfig(CurrentConfig.RomajiTable, CurrentConfig.MoraModifier, CurrentConfig.MoraAutoComplete, CurrentConfig.ZenkakuTable, CurrentConfig.ViCompatibleApps);
-        dictionary = createDictionary(dictionarySnapshot.Main, dictionarySnapshot.User);
+        CurrentConfig = config;
+        this.dictionary = dictionary;
         effectDispatcher.ApplyUserDictionaryPath(CurrentConfig.UserDictionaryPath);
     }
 
@@ -33,7 +27,7 @@ public sealed class SkkEngineSession(
     {
         var result = processKey(
             state,
-            config,
+            CurrentConfig,
             dictionary,
             command,
             activeProcessPath!);

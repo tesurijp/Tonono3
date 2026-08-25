@@ -12,10 +12,7 @@ public sealed class RuntimeInfrastructureTests
     {
         using var env = new TestEnvironment();
         var first = env.CreateConfig();
-        var changedRomaji = first.RomajiTable.SetItem(
-            0,
-            new(first.RomajiTable[0].Key, "changed"));
-        var second = first with { RomajiTable = changedRomaji };
+        var second = env.CreateConfig(viCompatibleApps: ["changed.exe"]);
 
         Assert.IsFalse(first.HasChange(first));
         Assert.IsTrue(first.HasChange(second));

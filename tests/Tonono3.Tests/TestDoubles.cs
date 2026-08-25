@@ -10,9 +10,8 @@ internal static class EngineFunctions
 {
     internal static readonly CreateInitialStateFunc CreateInitialState = SkkEngineFacade.CreateInitialState;
     internal static readonly CreateKeyCommandFunc CreateKeyCommand = SkkEngineFacade.CreateKeyCommand;
-    internal static readonly CreateConfigFunc CreateConfig = SkkEngineFacade.CreateConfig;
-    internal static readonly CreateDictionaryFunc CreateDictionary = SkkEngineFacade.CreateDictionary;
-    internal static readonly ParseDictionaryLineFunc ParseDictionaryLine = SkkEngineFacade.ParseDictionaryLine;
+    internal static readonly CompileConfigFunc CompileConfig = SkkEngineFacade.CompileConfig;
+    internal static readonly LoadDictionaryFunc LoadDictionary = SkkEngineFacade.LoadDictionary;
     internal static readonly GetCandidatesFunc GetCandidates = SkkEngineFacade.GetCandidates;
     internal static readonly GetCompletionsFunc GetCompletions = SkkEngineFacade.GetCompletions;
     internal static readonly ProcessKeyFunc ProcessKey = SkkEngineFacade.ProcessKey;
@@ -31,9 +30,9 @@ internal sealed class StubConfigLoader(Func<AppConfig> reload)
 }
 
 internal sealed class StubDictionaryLoader(
-    Func<IEnumerable<string>, string, SkkDictionarySnapshot> load)
+    Func<IEnumerable<string>, string, DictionarySnapshot> load)
 {
-    public SkkDictionarySnapshot Load(IEnumerable<string> mainPaths, string userPath) =>
+    public DictionarySnapshot Load(IEnumerable<string> mainPaths, string userPath) =>
         load(mainPaths, userPath);
 }
 
@@ -60,19 +59,19 @@ internal sealed class FakeUserDictionaryWriterFactory
     }
 }
 
-internal sealed class FakeConfigWatcher(AppConfig config, SkkDictionarySnapshot dict) : IConfigWatcher
+internal sealed class FakeConfigWatcher(AppConfig config, DictionarySnapshot dict) : IConfigWatcher
 {
-    public event Action<long, AppConfig, SkkDictionarySnapshot>? RuntimeReloaded;
+    public event Action<long, AppConfig, DictionarySnapshot>? RuntimeReloaded;
     internal int StartCount { get; private set; }
     internal int DisposeCount { get; private set; }
 
     public void Start() => StartCount++;
     public void Dispose() => DisposeCount++;
 
-    internal void Publish(long generation, AppConfig config, SkkDictionarySnapshot dictionary) =>
+    internal void Publish(long generation, AppConfig config, DictionarySnapshot dictionary) =>
         RuntimeReloaded?.Invoke(generation, config, dictionary);
 
-    public (AppConfig, SkkDictionarySnapshot) LoadRuntime() => (config, dict);
+    public (AppConfig, DictionarySnapshot) LoadRuntime() => (config, dict);
 }
 
 internal sealed class FakeKeyboardHook : IKeyboardHook
@@ -158,7 +157,7 @@ internal sealed class TestConfigPathProvider : IConfigPathProvider
 
 internal sealed class ControllerTestContext : IDisposable
 {
-    internal ControllerTestContext(AppConfig config, SkkDictionarySnapshot dictionary)
+    internal ControllerTestContext(AppConfig config, DictionarySnapshot dictionary)
     {
         Watcher = new FakeConfigWatcher(config, dictionary);
         Hook = new FakeKeyboardHook();
@@ -167,8 +166,6 @@ internal sealed class ControllerTestContext : IDisposable
         var keyboard = new FakeKeyboardInput(Hook);
         var session = new SkkEngineSession(
             EngineFunctions.CreateInitialState,
-            EngineFunctions.CreateConfig,
-            EngineFunctions.CreateDictionary,
             EngineFunctions.ProcessKey,
             EngineFunctions.CreateUiSnapshot,
             EffectDispatcher);

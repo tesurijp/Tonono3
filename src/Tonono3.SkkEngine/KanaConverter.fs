@@ -7,11 +7,11 @@ module internal KanaConverter =
     let private potentialPrefix (table: Map<string,string>) romaji =
         table |> Map.exists (fun key _ -> key.StartsWith(romaji, StringComparison.Ordinal))
 
-    let canMatch (config: EngineConfig) (value: string) = Map.containsKey value config.Romaji || potentialPrefix config.Romaji value
+    let canMatch (config: AppConfig) (value: string) = Map.containsKey value config.Romaji || potentialPrefix config.Romaji value
 
-    let tryFinish (config: EngineConfig) (romaji: string) = Map.tryFind romaji config.MoraComplete
+    let tryFinish (config: AppConfig) (romaji: string) = Map.tryFind romaji config.MoraComplete
 
-    let rec convert (config: EngineConfig) (romaji: string) (start: bool) =
+    let rec convert (config: AppConfig) (romaji: string) (start: bool) =
         match Map.tryFind romaji config.Romaji with
         | Some kana -> { ShouldStartConversion = start; Output = kana; Remaining = ""; Diagnostic = None }
         | None ->

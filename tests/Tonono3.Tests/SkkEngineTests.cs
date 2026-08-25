@@ -1,5 +1,4 @@
 using System.Text;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using Tonono3.AutoDefined;
 using Tonono3.SKKEngine;
@@ -184,11 +183,9 @@ public sealed class SkkEngineTests
     [TestCategory("Performance")]
     public void LargeImmutableSystemDictionarySupportsRepeatedQueriesWithoutReplacement()
     {
-        var main = Enumerable.Range(0, 20_000).ToImmutableDictionary(
-            index => $"よみ{index:D5}",
-            index => ImmutableArray.Create($"候補{index}"));
-        var dictionary = EngineFunctions.CreateDictionary(
-            main, ImmutableDictionary<string, ImmutableArray<string>>.Empty);
+        var main = Enumerable.Range(0, 20_000)
+            .Select(index => $"よみ{index:D5} /候補{index}/");
+        var dictionary = EngineFunctions.LoadDictionary(main, []);
         var stopwatch = Stopwatch.StartNew();
 
         for (var index = 0; index < 1_000; index++)
@@ -207,31 +204,24 @@ public sealed class SkkEngineTests
 
     private static Runner CreateRunner(AppConfig config) => new(
         config,
-        EngineFunctions.ParseDictionaryLine,
         EngineFunctions.CreateInitialState,
-        EngineFunctions.CreateConfig,
-        EngineFunctions.CreateDictionary,
+        EngineFunctions.LoadDictionary,
         EngineFunctions.ProcessKey);
 
     private sealed class Runner
     {
-        private readonly EngineConfig config;
+        private readonly AppConfig config;
         private DictionarySnapshot dictionary;
 
         public Runner(
             AppConfig source,
-            ParseDictionaryLineFunc parseDictionaryLine,
             CreateInitialStateFunc createInitialState,
-            CreateConfigFunc createConfig,
-            CreateDictionaryFunc createDictionary,
+            LoadDictionaryFunc loadDictionary,
             ProcessKeyFunc processKey)
         {
-            var snapshot = new SkkDicManager(parseDictionaryLine, _ => { })
+            config = source;
+            dictionary = new SkkDictionaryFileLoader(loadDictionary, _ => { })
                 .Load(source.DictionaryPaths, source.UserDictionaryPath);
-            config = createConfig(
-                source.RomajiTable, source.MoraModifier, source.MoraAutoComplete,
-                source.ZenkakuTable, source.ViCompatibleApps);
-            dictionary = createDictionary(snapshot.Main, snapshot.User);
             State = createInitialState();
             this.processKey = processKey;
         }

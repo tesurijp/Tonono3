@@ -7,14 +7,16 @@ namespace Tonono3.Tests;
 public sealed class DictionaryCharacterizationTests
 {
     [TestMethod]
-    public void LoadedSystemDictionaryIsReturnedAsImmutableSnapshot()
+    public void LoadedSystemDictionaryIsImmediatelyAvailableToEngineQueries()
     {
         using var env = new TestEnvironment();
-        var config = env.CreateConfig();
+        var main = env.CreateMainDictionary("direct-query.txt", Encoding.UTF8, false, "かんじ /漢字/感じ/");
+        var config = env.CreateConfig(dictionaryPaths: [main]);
         var loader = CreateLoader();
         var snapshot = loader.Load(config.DictionaryPaths, config.UserDictionaryPath);
 
-        Assert.IsInstanceOfType<System.Collections.Immutable.ImmutableDictionary<string, System.Collections.Immutable.ImmutableArray<string>>>(snapshot.Main);
+        var candidates = Candidates(snapshot, "かんじ");
+        Assert.Contains("漢字", candidates);
     }
 
     [TestMethod]
@@ -87,17 +89,14 @@ public sealed class DictionaryCharacterizationTests
         CollectionAssert.AreEqual(new[] { "仮名" }, Candidates(dictionary, "かな"));
     }
 
-    private static SkkDicManager CreateLoader() => new(EngineFunctions.ParseDictionaryLine, _ => { });
+    private static SkkDictionaryFileLoader CreateLoader() => new(EngineFunctions.LoadDictionary, _ => { });
 
-    private static SkkDictionarySnapshot Load(AppConfig config) =>
+    private static DictionarySnapshot Load(AppConfig config) =>
         CreateLoader().Load(config.DictionaryPaths, config.UserDictionaryPath);
 
-    private static DictionarySnapshot ToEngineDictionary(SkkDictionarySnapshot dictionary) =>
-        EngineFunctions.CreateDictionary(dictionary.Main, dictionary.User);
+    private static string[] Candidates(DictionarySnapshot dictionary, string reading) =>
+        EngineFunctions.GetCandidates(dictionary, reading);
 
-    private static string[] Candidates(SkkDictionarySnapshot dictionary, string reading) =>
-        EngineFunctions.GetCandidates(ToEngineDictionary(dictionary), reading);
-
-    private static string[] Completions(SkkDictionarySnapshot dictionary, string prefix) =>
-        EngineFunctions.GetCompletions(ToEngineDictionary(dictionary), prefix);
+    private static string[] Completions(DictionarySnapshot dictionary, string prefix) =>
+        EngineFunctions.GetCompletions(dictionary, prefix);
 }

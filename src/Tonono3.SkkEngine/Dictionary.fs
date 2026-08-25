@@ -1,6 +1,7 @@
 namespace Tonono3.SKKEngine
 
 open System
+open System.Collections.Generic
 
 module internal Dictionary =
     let parseLine (line: string) =
@@ -48,3 +49,22 @@ module internal Dictionary =
             let next = List.filter ((<>) word) previous
             if previous = next then None
             else Some(DictionarySnapshot(dictionary.MainMap, Map.add reading next dictionary.UserMap))
+
+    let load (lines: IEnumerable<string>) =
+        let entries = System.Collections.Generic.Dictionary<string, ResizeArray<string>>()
+        for line in lines do
+            match parseLine line with
+            | Some(reading, candidates) ->
+                match entries.TryGetValue(reading) with
+                | true, previous ->
+                    for candidate in candidates do
+                        if not(previous.Contains(candidate)) then
+                            previous.Add(candidate)
+                | false, _ -> entries[reading] <- ResizeArray(candidates)
+            | None -> ()
+        entries
+        |> Seq.map (fun pair -> pair.Key, List.ofSeq pair.Value)
+        |> Map.ofSeq
+
+    let loadAll (mainSources: IEnumerable<string>) (userSource: IEnumerable<string>) =
+        DictionarySnapshot(load mainSources, load userSource)

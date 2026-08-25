@@ -1,7 +1,6 @@
 namespace Tonono3.SKKEngine
 
 open System.Collections.Generic
-open System.Collections.Immutable
 open tsr_di
 
 [<AbstractClass; Sealed>]
@@ -15,26 +14,20 @@ type SkkEngineFacade private () =
         KeyCommand(vkCode, shift, control, ch)
 
     [<ServiceFunction>]
-    static member CreateConfig(
-        romaji: ImmutableArray<KeyValuePair<string,string>>, mora: ImmutableArray<KeyValuePair<string,string>>,
-        moraComplete: ImmutableArray<KeyValuePair<string,string>>, zenkaku: ImmutableArray<KeyValuePair<char,string>>,
-        viApps: ImmutableArray<string>) =
-        let toMap (source: ImmutableArray<KeyValuePair<'k,'v>>) = source |> Seq.map (fun pair -> pair.Key, pair.Value) |> Map.ofSeq
-        EngineConfig(toMap romaji, toMap mora, toMap moraComplete, toMap zenkaku, viApps |> Seq.map (fun value -> value.ToLowerInvariant()) |> Set.ofSeq)
+    static member CompileConfig(
+        configFolder: string, dictionaryPaths: string array, userDictionaryPath: string,
+        vowels: string, rows: Dictionary<string, string array>, irregularRomaji: Dictionary<string, string>,
+        moraModifiers: Dictionary<string, List<string>>, moraComplete: Dictionary<string, string>,
+        zenkakuStart: char, zenkakuEnd: char, zenkakuOffset: int,
+        irregularZenkaku: Dictionary<string, string>, viApps: string array) =
+        Config.compile configFolder dictionaryPaths userDictionaryPath vowels rows irregularRomaji
+            moraModifiers moraComplete zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku viApps
 
     [<ServiceFunction>]
-    static member CreateDictionary(
-        main: ImmutableDictionary<string, ImmutableArray<string>>,
-        user: ImmutableDictionary<string, ImmutableArray<string>>) =
-        let toMap (source: ImmutableDictionary<string, ImmutableArray<string>>) =
-            source |> Seq.map (fun pair -> pair.Key, pair.Value |> Seq.toList) |> Map.ofSeq
-        DictionarySnapshot(toMap main, toMap user)
-
-    [<ServiceFunction>]
-    static member ParseDictionaryLine(line: string) =
-        match Dictionary.parseLine line with
-        | Some(reading, candidates) -> ParsedDictionaryEntry(true, reading, List.toArray candidates)
-        | None -> ParsedDictionaryEntry(false, "", [||])
+    static member LoadDictionary(
+        mainSources: IEnumerable<string>,
+        userSource: IEnumerable<string>) =
+        Dictionary.loadAll mainSources userSource
 
     [<ServiceFunction>]
     static member GetCandidates(dictionary: DictionarySnapshot, reading: string) =

@@ -13,7 +13,7 @@ module internal EngineComposition =
             withComposition { value with Text = value.Text + output } runtime
         | _ -> commitProduced output runtime
 
-    let rec startConversion (config: EngineConfig) (runtime: Runtime) =
+    let rec startConversion (config: AppConfig) (runtime: Runtime) =
         let value = composition runtime |> Option.defaultValue (StateModel.emptyComposition (Conversion None))
         let runtime, value =
             match KanaConverter.tryFinish config value.Romaji with
@@ -25,7 +25,7 @@ module internal EngineComposition =
         | current :: remaining -> withComposition { value with Candidates = Some { Items = current :: remaining; Index = 0 } } runtime
         | [] -> runtime |> addLog $"No candidates found for: {key}" |> startRegistration key
 
-    and tryConvertRomaji (config: EngineConfig) (runtime: Runtime) =
+    and tryConvertRomaji (config: AppConfig) (runtime: Runtime) =
         match composition runtime with
         | None -> runtime
         | Some value ->
@@ -56,7 +56,7 @@ module internal EngineComposition =
                 | None -> value.Text + value.Romaji, runtime
             runtime |> commitProduced text |> reset
 
-    let flipAndCommit (config: EngineConfig) (runtime: Runtime) =
+    let flipAndCommit (config: AppConfig) (runtime: Runtime) =
         match composition runtime with
         | None -> runtime
         | Some value ->
@@ -64,13 +64,13 @@ module internal EngineComposition =
             let flipped = if mode runtime = InputMode.Hiragana then KanaConverter.hiraToKatakana text else KanaConverter.kataToHiragana text
             runtime |> commitProduced flipped |> reset
 
-    let viCompatible (activePath: string) (config: EngineConfig) =
+    let viCompatible (activePath: string) (config: AppConfig) =
         if String.IsNullOrEmpty(activePath) then false
         else
-            let normalized = activePath.Replace('/', '\\').ToLowerInvariant()
-            config.ViApps |> Set.exists (fun app -> normalized.EndsWith(app, StringComparison.Ordinal))
+            let normalized = activePath.Replace('/', '\\')
+            config.ViAppEntries |> Array.exists (fun app -> normalized.EndsWith(app, StringComparison.OrdinalIgnoreCase))
 
-    let preCheck (activePath: string) (config: EngineConfig) (command: KeyCommand) (runtime: Runtime) =
+    let preCheck (activePath: string) (config: AppConfig) (command: KeyCommand) (runtime: Runtime) =
         if command.VkCode = Escape && mode runtime <> InputMode.Disabled && viCompatible activePath config then
             Some(false, runtime |> reset |> changeMode InputMode.Disabled)
         elif command.VkCode >= NavigationFirst && command.VkCode <= NavigationLast then Some(false, runtime)
@@ -90,7 +90,7 @@ module internal EngineComposition =
             true, withComposition { value with Text = text; Mode = nextMode } runtime
         | _ -> false, runtime
 
-    let handleRomaji (config: EngineConfig) (character: char) (runtime: Runtime) =
+    let handleRomaji (config: AppConfig) (character: char) (runtime: Runtime) =
         let initial = composition runtime |> Option.defaultValue (StateModel.emptyComposition Direct)
         let value =
             if Char.IsUpper(character) && Char.IsLetter(character) then
@@ -108,7 +108,7 @@ module internal EngineComposition =
         let value = { value with Romaji = value.Romaji + Char.ToLower(character).ToString() }
         true, withComposition value runtime |> tryConvertRomaji config
 
-    let handleChar (config: EngineConfig) (character: char) (runtime: Runtime) =
+    let handleChar (config: AppConfig) (character: char) (runtime: Runtime) =
         if character = char 0 || Char.IsControl(character) then false, runtime
         else
             match composition runtime with
@@ -119,7 +119,7 @@ module internal EngineComposition =
                     false, if isBufferActive runtime then commitAll runtime else runtime
                 else handleRomaji config character runtime
 
-    let handleQ (config: EngineConfig) (runtime: Runtime) =
+    let handleQ (config: AppConfig) (runtime: Runtime) =
         if isBufferActive runtime then true, flipAndCommit config runtime
         else
             let next = match mode runtime with InputMode.Hiragana -> InputMode.Katakana | InputMode.Katakana -> InputMode.Hiragana | value -> value

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.IO.Compression;
 using System.Text;
 using Tonono3.SKKEngine;
@@ -28,18 +27,28 @@ internal sealed class TestEnvironment : IDisposable
             ["ka"] = "か", ["ki"] = "き", ["ku"] = "く", ["ke"] = "け", ["ko"] = "こ",
             ["nn"] = "ん", [","] = "、", ["."] = "。", ["-"] = "ー"
         };
-        var moraModifier = new Dictionary<string, string> { ["kk"] = "っ", ["nk"] = "ん" };
+        var moraModifier = new Dictionary<string, List<string>>
+        {
+            ["っ"] = ["kk"],
+            ["ん"] = ["nk"]
+        };
         var moraAutoComplete = new Dictionary<string, string> { ["n"] = "ん" };
-        var zenkaku = new Dictionary<char, string> { ['a'] = "ａ", [' '] = "　", ['!'] = "！" };
+        var zenkaku = new Dictionary<string, string> { ["a"] = "ａ", [" "] = "　", ["!"] = "！" };
 
-        return new(
-            [.. romaji.OrderBy(pair => pair.Key, StringComparer.Ordinal)],
-            [.. moraModifier.OrderBy(pair => pair.Key, StringComparer.Ordinal)],
-            [.. moraAutoComplete.OrderBy(pair => pair.Key, StringComparer.Ordinal)],
-            [.. zenkaku.OrderBy(pair => pair.Key)],
-            dictionaryPaths?.ToImmutableArray() ?? [CreateMainDictionary("main.txt", Encoding.UTF8, false)],
+        return EngineFunctions.CompileConfig(
+            root,
+            dictionaryPaths?.ToArray() ?? [CreateMainDictionary("main.txt", Encoding.UTF8, false)],
             userDictionaryPath ?? PathFor("user.txt"),
-            viCompatibleApps?.ToImmutableArray() ?? ["vim.exe"]);
+            "a",
+            new Dictionary<string, string[]> { [""] = ["あ"] },
+            romaji,
+            moraModifier,
+            moraAutoComplete,
+            'a',
+            'a',
+            'ａ' - 'a',
+            zenkaku,
+            viCompatibleApps?.ToArray() ?? ["vim.exe"]);
     }
 
     public string CreateMainDictionary(string fileName, Encoding encoding, bool gzip, params string[]? lines)
@@ -63,8 +72,8 @@ internal sealed class TestEnvironment : IDisposable
     public static KeyCommand Key(int vkCode, char ch = '\0', bool shift = false, bool control = false) =>
         EngineFunctions.CreateKeyCommand(vkCode, shift, control, ch);
 
-    public SkkDictionarySnapshot LoadDictionary(AppConfig config) =>
-        new SkkDicManager(EngineFunctions.ParseDictionaryLine, _ => { })
+    public DictionarySnapshot LoadDictionary(AppConfig config) =>
+        new SkkDictionaryFileLoader(EngineFunctions.LoadDictionary, _ => { })
             .Load(config.DictionaryPaths, config.UserDictionaryPath);
 
     public void Dispose()

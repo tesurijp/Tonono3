@@ -21,8 +21,8 @@ public interface IUserDictionaryWriter : IDisposable
 
 public interface IConfigWatcher : IDisposable
 {
-    event Action<long, AppConfig, SkkDictionarySnapshot>? RuntimeReloaded;
-    (AppConfig, SkkDictionarySnapshot) LoadRuntime();
+    event Action<long, AppConfig, DictionarySnapshot>? RuntimeReloaded;
+    (AppConfig, DictionarySnapshot) LoadRuntime();
     void Start();
 }
 public interface ISkkKeyHandler : IDisposable
@@ -36,7 +36,7 @@ public interface IKeyboardHook : IDisposable
 }
 public interface ISkkEngineSession : IDisposable
 {
-    void ApplyRuntime(AppConfig appconfig, SkkDictionarySnapshot dictionarySnapshot);
+    void ApplyRuntime(AppConfig config, DictionarySnapshot dictionary);
     TransitionResult Process(KeyCommand command, string? activeProcessPath);
     SkkUiSnapshot CreateUiSnapshot(long version);
     AppConfig CurrentConfig { get; }
