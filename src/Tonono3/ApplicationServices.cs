@@ -14,7 +14,7 @@ public sealed class ApplicationControl(WriteLogFunc writeLog)
     [ServiceFunction(ServiceName = "InitializeApplicationLifetimeFunc")]
     public void Initialize(IControlledApplicationLifetime? lifetime) => this.lifetime = lifetime;
 
-    [ServiceFunction(ServiceName = "RestartApplicationFunc")]
+    [ServiceFunction(ServiceType =typeof(ExecUiActionFunc), Name = "RestartApplication")]
     public void Restart()
     {
         try
@@ -37,15 +37,15 @@ public sealed class ApplicationControl(WriteLogFunc writeLog)
         Shutdown();
     }
 
-    [ServiceFunction(ServiceName = "ShutdownApplicationFunc")]
+    [ServiceFunction(ServiceType =typeof(ExecUiActionFunc), Name = "ShutdownApplication")]
     public void Shutdown() => lifetime?.Shutdown();
 }
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class ApplicationCoordinator(
     ISkkController controller,
-    CreateTononoUiFunc createTononoUi,
-    CreateSystemMenuFunc createSystemMenu,
+     CreateTononoUiFunc createTononoUi,
+     CreateSystemMenuFunc createSystemMenu,
     InitializeApplicationLifetimeFunc initializeApplicationLifetime) : IApplicationCoordinator
 {
     private ITononoUi? ui;

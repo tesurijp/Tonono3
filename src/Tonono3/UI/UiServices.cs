@@ -13,8 +13,8 @@ public sealed class UiFactory(
     IConfigPathProvider paths,
     GetTargetWindowPositionFunc getTargetWindowPosition,
     SetNonActiveWindowFunc setNonActiveWindow,
-    RestartApplicationFunc restart,
-    ShutdownApplicationFunc shutdown,
+    [FromNamed("RestartApplication")] ExecUiActionFunc restart,
+    [FromNamed("ShutdownApplication")] ExecUiActionFunc shutdown,
     ISkkController controller,
     WriteLogFunc writeLog)
 {
@@ -30,9 +30,8 @@ public sealed class UiFactory(
     public ITononoUi CreateTononoUi() => new TononoUI(getTargetWindowPosition, setNonActiveWindow) { Icon = icon };
 
     [ServiceFunction]
-    public ISystemMenu CreateSystemMenu() => new SystemMenu(restart, shutdown, controller, OpenConfigFile, CreateInfoWindow, icon);
+    public ISystemMenu CreateSystemMenu() => new SystemMenu(controller, icon , restart, shutdown, OpenConfigFile, CreateInfoWindow);
 
-    [ServiceFunction]
     public void OpenConfigFile()
     {
         try

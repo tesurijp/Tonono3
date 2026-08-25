@@ -71,4 +71,4 @@ public interface IApplicationCoordinator : IDisposable
     void Start(IControlledApplicationLifetime? controlledLifetime);
 }
 
-
+public delegate void ExecUiActionFunc();

@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using System;
 using Tonono3.AutoDefined;
 
 namespace Tonono3.UI;
@@ -8,48 +7,31 @@ public sealed class SystemMenu : ISystemMenu
 {
     private readonly TrayIcon trayicon;
     private Window? infoWindow;
-    private readonly Action showInfo;
-
     public SystemMenu(
-        RestartApplicationFunc restart,
-        ShutdownApplicationFunc shutdown,
         ISkkController controller,
-        OpenConfigFileFunc openConfigFile,
-        CreateInfoWindowFunc createInfoWindow,
-        WindowIcon appIcon)
+        WindowIcon appIcon,
+        ExecUiActionFunc restart,
+        ExecUiActionFunc shutdown,
+        ExecUiActionFunc openConfigFile,
+        CreateInfoWindowFunc createInfoWindow)
     {
-        showInfo = () => ShowInfoWindow(createInfoWindow, controller);
         trayicon = new TrayIcon
         {
             Icon = appIcon,
             ToolTipText = "Tonono",
-            Menu = CreateMenu(
-                showInfo,
-                () => restart(),
-                () => shutdown(),
-                () => openConfigFile()),
+            Menu = [
+                makeMenu("情報",  () => ShowInfoWindow(createInfoWindow, controller)),
+                makeMenu("設定", openConfigFile),
+                makeMenu("再起動", restart),
+                new NativeMenuItemSeparator(),
+                makeMenu("終了", shutdown)
+            ],
             IsVisible = true
         };
-    }
 
-    private static NativeMenu CreateMenu(
-        Action showInfo,
-        Action restartAction,
-        Action shutdownAction,
-        Action openConfigAction)
-    {
-        var menu = new NativeMenu
+        static NativeMenuItem makeMenu(string header, ExecUiActionFunc act)
         {
-            makeMenu("情報", showInfo),
-            makeMenu("設定", openConfigAction),
-            makeMenu("再起動", restartAction),
-            new NativeMenuItemSeparator(),
-            makeMenu("終了", shutdownAction)
-        };
-        return menu;
-        static NativeMenuItem makeMenu(string header, Action act)
-        {
-            var menu = new NativeMenuItem { Header = header };
+            var menu = new NativeMenuItem(header);
             menu.Click += (_, _) => act();
             return menu;
         }
