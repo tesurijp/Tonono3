@@ -55,14 +55,11 @@ public partial class TononoUI : Window, ITononoUi
 
             if (snapshot.IsVisible)
             {
-                if (!IsVisible)
-                {
-                    Show();
-                }
+                Show();
                 ApplyNativeWindowStyles();
                 UpdatePosition();
             }
-            else if (IsVisible)
+            else
             {
                 Hide();
             }
