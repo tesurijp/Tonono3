@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Tonono3.AutoDefined;
@@ -34,29 +33,6 @@ internal sealed class StubDictionaryLoader(
 {
     public DictionarySnapshot Load(IEnumerable<string> mainPaths, string userPath) =>
         load(mainPaths, userPath);
-}
-
-internal sealed class FakeUserDictionaryWriter : IUserDictionaryWriter
-{
-    internal List<ImmutableDictionary<string, ImmutableArray<string>>> Values { get; } = [];
-    internal int DisposeCount { get; private set; }
-
-    public void Enqueue(ImmutableDictionary<string, ImmutableArray<string>> dictionary) =>
-        Values.Add(dictionary);
-
-    public void Dispose() => DisposeCount++;
-}
-
-internal sealed class FakeUserDictionaryWriterFactory
-{
-    internal List<(string Path, FakeUserDictionaryWriter Writer)> Created { get; } = [];
-
-    public IUserDictionaryWriter Create(string path)
-    {
-        var writer = new FakeUserDictionaryWriter();
-        Created.Add((path, writer));
-        return writer;
-    }
 }
 
 internal sealed class FakeConfigWatcher(AppConfig config, DictionarySnapshot dict) : IConfigWatcher
@@ -107,34 +83,18 @@ internal sealed class FakeActiveProcess
     public string GetActiveProcessPath() => "";
 }
 
-internal sealed class FakeEffectDispatcher(
-    FakeUserDictionaryWriterFactory writerFactory) : IEngineEffectDispatcher
+internal sealed class FakeEffectDispatcher : IEngineEffectDispatcher
 {
     internal List<TransitionResult> Results { get; } = [];
-    private string? userDictionaryPath;
-    private IUserDictionaryWriter? dictionaryWriter;
+    internal string? UserDictionaryPath { get; private set; }
 
-    public void ApplyUserDictionaryPath(string path)
-    {
-        if (string.Equals(userDictionaryPath, path, StringComparison.Ordinal))
-        {
-            return;
-        }
-
-        dictionaryWriter?.Dispose();
-        dictionaryWriter = writerFactory.Create(path);
-        userDictionaryPath = path;
-    }
+    public void ApplyUserDictionaryPath(string path) => UserDictionaryPath = path;
 
     public void Execute(TransitionResult result)
     {
         Results.Add(result);
     }
 
-    public void Dispose()
-    {
-        dictionaryWriter?.Dispose();
-    }
 }
 
 internal sealed class TestConfigPathProvider : IConfigPathProvider
@@ -161,8 +121,7 @@ internal sealed class ControllerTestContext : IDisposable
     {
         Watcher = new FakeConfigWatcher(config, dictionary);
         Hook = new FakeKeyboardHook();
-        WriterFactory = new FakeUserDictionaryWriterFactory();
-        EffectDispatcher = new FakeEffectDispatcher(WriterFactory);
+        EffectDispatcher = new FakeEffectDispatcher();
         var keyboard = new FakeKeyboardInput(Hook);
         var session = new SkkEngineSession(
             EngineFunctions.CreateInitialState,
@@ -175,7 +134,6 @@ internal sealed class ControllerTestContext : IDisposable
     internal SkkController Controller { get; }
     internal FakeConfigWatcher Watcher { get; }
     internal FakeKeyboardHook Hook { get; }
-    internal FakeUserDictionaryWriterFactory WriterFactory { get; }
     internal FakeEffectDispatcher EffectDispatcher { get; }
 
     public void Dispose() => Controller.Dispose();

@@ -3,84 +3,61 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Channels;
+using System.Threading;
 using System.Threading.Tasks;
 using Tonono3.AutoDefined;
 using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
-internal sealed class UserDictionaryWriter : IUserDictionaryWriter
+internal sealed class UserDictionaryWriter(string FilePath, WriteLogFunc WriteLog) : IUserDictionaryWriter
 {
-    private readonly string path;
-    private readonly WriteLogFunc writeLog;
-    private readonly Channel<ImmutableDictionary<string, ImmutableArray<string>>> channel;
-    private readonly Task writerTask;
-    private bool disposed;
-
-    internal UserDictionaryWriter(string path, WriteLogFunc writeLog)
-    {
-        this.path = path;
-        this.writeLog = writeLog;
-        channel = Channel.CreateUnbounded<ImmutableDictionary<string, ImmutableArray<string>>>(
-            new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
-        writerTask = RunAsync();
-    }
+    private sealed record class DicBuffer(long Version, ImmutableDictionary<string, ImmutableArray<string>> Dictionary);
+    private readonly static Lock lockObj = new();
+    private static long dicVersion;
+    private DicBuffer? buffer;
 
     public void Enqueue(ImmutableDictionary<string, ImmutableArray<string>> dictionary)
     {
-        if (!disposed)
+        lock (lockObj)
         {
-            channel.Writer.TryWrite(dictionary);
+            buffer = new(++dicVersion, dictionary);
         }
     }
 
-    private async Task RunAsync()
+    private async Task SaveAsync()
     {
-        await foreach (var first in channel.Reader.ReadAllAsync())
+        if (buffer is not null)
         {
-            var latest = first;
-            while (channel.Reader.TryRead(out var newer))
+            var path = Path.GetTempFileName();
+            var folder = Path.GetDirectoryName(path)!;
+            Directory.CreateDirectory(folder);
+            var lines = buffer.Dictionary.Select(pair => $"{pair.Key} /{string.Join("/", pair.Value)}/");
+            await File.WriteAllLinesAsync(path, lines, Encoding.UTF8).ConfigureAwait(false);
+            lock (lockObj)
             {
-                latest = newer;
+                if (buffer.Version == dicVersion)
+                {
+                    File.Move(path, FilePath, overwrite: true);
+                }
             }
-            await SaveAsync(latest).ConfigureAwait(false);
         }
     }
 
-    private async Task SaveAsync(ImmutableDictionary<string, ImmutableArray<string>> dictionary)
+    private void RunForget()
     {
-        var folder = Path.GetDirectoryName(path);
-        var tempPath = path + ".tmp";
         try
         {
-            if (!string.IsNullOrEmpty(folder))
-            {
-                Directory.CreateDirectory(folder);
-            }
-            var lines = dictionary.Select(pair => $"{pair.Key} /{string.Join("/", pair.Value)}/");
-            await File.WriteAllLinesAsync(tempPath, lines, Encoding.UTF8).ConfigureAwait(false);
-            File.Move(tempPath, path, overwrite: true);
+            Task.Run(SaveAsync);
+            WriteLog("Update Dictionary");
         }
         catch (Exception ex)
         {
-            writeLog($"Failed to save user dictionary: {ex.Message}");
+            WriteLog($"Failed to save user dictionary: {ex.Message}");
         }
     }
 
-    public void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
-        disposed = true;
-        channel.Writer.TryComplete();
-        if (!writerTask.Wait(TimeSpan.FromSeconds(5)))
-        {
-            writeLog("Timed out while flushing user dictionary.");
-        }
-    }
+    public void Dispose() => RunForget();
 }
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]

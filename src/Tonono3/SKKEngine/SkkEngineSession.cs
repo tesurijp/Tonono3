@@ -37,5 +37,4 @@ public sealed class SkkEngineSession(
         return result;
     }
     public UiSnapshot CreateUiSnapshot(long version) => createUiSnapshot(state, version);
-    public void Dispose() => effectDispatcher.Dispose();
 }

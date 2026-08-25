@@ -34,7 +34,7 @@ public interface IKeyboardHook : IDisposable
 {
     void Install(Func<int, bool> KeyIntercepted);
 }
-public interface ISkkEngineSession : IDisposable
+public interface ISkkEngineSession
 {
     void ApplyRuntime(AppConfig config, DictionarySnapshot dictionary);
     TransitionResult Process(KeyCommand command, string? activeProcessPath);
@@ -42,7 +42,7 @@ public interface ISkkEngineSession : IDisposable
     AppConfig CurrentConfig { get; }
 }
 
-public interface IEngineEffectDispatcher : IDisposable
+public interface IEngineEffectDispatcher
 {
     void ApplyUserDictionaryPath(string path);
     void Execute(TransitionResult result);

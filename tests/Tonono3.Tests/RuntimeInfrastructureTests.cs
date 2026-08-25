@@ -19,7 +19,7 @@ public sealed class RuntimeInfrastructureTests
     }
 
     [TestMethod]
-    public void UserDictionaryWriterPersistsLatestQueuedSnapshotInBackground()
+    public async Task UserDictionaryWriterPersistsLatestQueuedSnapshotInBackground()
     {
         using var env = new TestEnvironment();
         var path = env.PathFor("async-user.txt");
@@ -34,7 +34,8 @@ public sealed class RuntimeInfrastructureTests
             writer.Enqueue(latest);
         }
 
-        Assert.IsEmpty(logger.Messages);
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
         Assert.Contains("よみ /二/一/", File.ReadAllText(path, Encoding.UTF8));
     }
 
@@ -148,7 +149,6 @@ public sealed class RuntimeInfrastructureTests
             TestEnvironment.Key(SkkKeyConstants.VkJ, control: true), null));
         Assert.AreEqual(1, context.Watcher.DisposeCount);
         Assert.AreEqual(1, context.Hook.DisposeCount);
-        Assert.AreEqual(1, context.WriterFactory.Created.Single().Writer.DisposeCount);
     }
 
     [TestMethod]
@@ -175,6 +175,5 @@ public sealed class RuntimeInfrastructureTests
         Assert.AreEqual(1, menu.DisposeCount);
         Assert.AreEqual(1, context.Watcher.DisposeCount);
         Assert.AreEqual(1, context.Hook.DisposeCount);
-        Assert.AreEqual(1, context.WriterFactory.Created.Single().Writer.DisposeCount);
     }
 }

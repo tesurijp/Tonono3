@@ -12,20 +12,10 @@ public sealed class EngineEffectExecutor(
     ) : IEngineEffectDispatcher
 {
     private string userDicPath = "";
-    private IUserDictionaryWriter? dictionaryWriter;
-
-    public void ApplyUserDictionaryPath(string path)
-    {
-        if (userDicPath != path)
-        {
-            userDicPath = path;
-            dictionaryWriter?.Dispose();
-            dictionaryWriter = createUserDictionaryWriter(userDicPath);
-        }
-    }
-
+    public void ApplyUserDictionaryPath(string path) => userDicPath = path;
     public void Execute(TransitionResult result)
     {
+        IUserDictionaryWriter? dictionaryWriter = null;
         foreach (var effect in result.Effects)
         {
             switch (effect)
@@ -34,7 +24,8 @@ public sealed class EngineEffectExecutor(
                     sendText(commit.Text);
                     break;
                 case PersistUserDictionaryEffect:
-                    dictionaryWriter?.Enqueue(result.Dictionary.User);
+                    dictionaryWriter ??= createUserDictionaryWriter(userDicPath);
+                    dictionaryWriter.Enqueue(result.Dictionary.User);
                     break;
                 case TurnOffImeEffect:
                     turnOffIme();
@@ -44,6 +35,6 @@ public sealed class EngineEffectExecutor(
                     break;
             }
         }
+        dictionaryWriter?.Dispose();
     }
-    public void Dispose() => dictionaryWriter?.Dispose();
 }

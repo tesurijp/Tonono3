@@ -96,7 +96,6 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
 
         keyHandler.Dispose();
         configWatcher.Dispose();
-        skkEngineSession.Dispose();
         GC.SuppressFinalize(this);
     }
 
