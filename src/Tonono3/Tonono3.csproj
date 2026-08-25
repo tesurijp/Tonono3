@@ -6,7 +6,7 @@
     <ApplicationIcon>TONONO.ICO</ApplicationIcon>
     <ResDir>resources\</ResDir>
     <NativeAotPublishDir>$(MSBuildThisFileDirectory)..\..\publish\</NativeAotPublishDir>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
