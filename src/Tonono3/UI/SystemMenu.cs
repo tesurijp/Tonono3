@@ -8,7 +8,7 @@ public sealed class SystemMenu : ISystemMenu
     private readonly TrayIcon trayicon;
     private Window? infoWindow;
     public SystemMenu(
-        ISkkController controller,
+        GetAppConfigFunc getAppConfig,
         WindowIcon appIcon,
         ExecUiActionFunc restart,
         ExecUiActionFunc shutdown,
@@ -20,7 +20,7 @@ public sealed class SystemMenu : ISystemMenu
             Icon = appIcon,
             ToolTipText = "Tonono",
             Menu = [
-                makeMenu("情報",  () => ShowInfoWindow(createInfoWindow, controller)),
+                makeMenu("情報",  () => ShowInfoWindow(createInfoWindow, getAppConfig)),
                 makeMenu("設定", openConfigFile),
                 makeMenu("再起動", restart),
                 new NativeMenuItemSeparator(),
@@ -37,7 +37,7 @@ public sealed class SystemMenu : ISystemMenu
         }
     }
 
-    private void ShowInfoWindow(CreateInfoWindowFunc createInfoWindow, ISkkController controller)
+    private void ShowInfoWindow(CreateInfoWindowFunc createInfoWindow, GetAppConfigFunc getAppConfig)
     {
         if (infoWindow is { IsVisible: true })
         {
@@ -45,7 +45,7 @@ public sealed class SystemMenu : ISystemMenu
         }
         else
         {
-            infoWindow = createInfoWindow(controller.CurrentConfig);
+            infoWindow = createInfoWindow(getAppConfig());
             infoWindow.Closed += (_, _) => infoWindow = null;
             infoWindow.Show();
         }

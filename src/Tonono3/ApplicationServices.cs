@@ -60,8 +60,8 @@ public sealed class ApplicationCoordinator(
         ui = createTononoUi();
         controller.UiUpdated += ui.ApplySnapshot;
         menu = createSystemMenu();
-        controller.Start();
-        ui.ApplySnapshot(controller.CurrentUiSnapshot);
+        var snapshot = controller.Start();
+        ui.ApplySnapshot(snapshot);
     }
 
     public void Dispose()

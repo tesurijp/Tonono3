@@ -15,31 +15,22 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
 
     public event Action<UiSnapshot>? UiUpdated;
 
-    private static T GetField<T>(Func<T> getter)
-    {
-        lock (gate)
-        {
-            return getter();
-        }
-    }
-    public UiSnapshot CurrentUiSnapshot => GetField(() => skkEngineSession.CreateUiSnapshot(uiVersion));
-    public AppConfig CurrentConfig => GetField(() => skkEngineSession.CurrentConfig);
-    public void Start()
+    public UiSnapshot Start()
     {
         lock (gate)
         {
             if (started || disposed)
             {
-                return;
+                throw new InvalidOperationException();
             }
             started = true;
             configWatcher.RuntimeReloaded += OnRuntimeReloaded;
+            var (currentConfig, dictionary) = configWatcher.LoadRuntime();
+            configWatcher.Start();
+            keyHandler.Start(ProcessCommand);
+            skkEngineSession.ApplyRuntime(currentConfig, dictionary);
+            return skkEngineSession.CreateUiSnapshot(uiVersion);
         }
-
-        var (currentConfig, dictionary) = configWatcher.LoadRuntime();
-        skkEngineSession.ApplyRuntime(currentConfig, dictionary);
-        configWatcher.Start();
-        keyHandler.Start(ProcessCommand);
     }
 
     private void OnRuntimeReloaded( long generation, AppConfig config, DictionarySnapshot dictionary)

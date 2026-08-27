@@ -121,10 +121,10 @@ public sealed class RuntimeInfrastructureTests
         controller.Start();
 
         context.Watcher.Publish(1, second, secondDictionary);
-        Assert.AreSame(first, controller.CurrentConfig);
+        Assert.AreSame(first, context.Session.CurrentConfig);
 
         controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkLeft), null);
-        Assert.AreSame(second, controller.CurrentConfig);
+        Assert.AreSame(second, context.Session.CurrentConfig);
     }
 
     [TestMethod]

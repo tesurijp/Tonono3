@@ -123,18 +123,19 @@ internal sealed class ControllerTestContext : IDisposable
         Hook = new FakeKeyboardHook();
         EffectDispatcher = new FakeEffectDispatcher();
         var keyboard = new FakeKeyboardInput(Hook);
-        var session = new SkkEngineSession(
+        Session = new SkkEngineSession(
             EngineFunctions.CreateInitialState,
             EngineFunctions.ProcessKey,
             EngineFunctions.CreateUiSnapshot,
             EffectDispatcher);
-        Controller = new SkkController(Watcher, keyboard, session);
+        Controller = new SkkController(Watcher, keyboard, Session);
     }
 
     internal SkkController Controller { get; }
     internal FakeConfigWatcher Watcher { get; }
     internal FakeKeyboardHook Hook { get; }
     internal FakeEffectDispatcher EffectDispatcher { get; }
+    internal SkkEngineSession Session { get; }
 
     public void Dispose() => Controller.Dispose();
 }

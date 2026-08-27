@@ -1,9 +1,10 @@
+using Microsoft.FSharp.Core;
 using Tonono3.AutoDefined;
 using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
-[ServiceClass]
+[ServiceClass(Lifetime=Lifetime.Singleton)]
 public sealed class SkkEngineSession(
     CreateInitialStateFunc createInitialState,
     ProcessKeyFunc processKey,
@@ -14,6 +15,9 @@ public sealed class SkkEngineSession(
     //  SkkController の開始時にApplyRuntimeが呼ばれることで以下のフィールドは必ず初期化される。
     public AppConfig CurrentConfig { get; private set; } = null!;
     private DictionarySnapshot dictionary = null!;
+
+    [ServiceFunction]
+    public AppConfig GetAppConfig() => CurrentConfig;
 
     public void ApplyRuntime(AppConfig config, DictionarySnapshot dictionary)
     {
