@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: native-aot-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -63,3 +67,29 @@ jobs:
           if-no-files-found: error
           retention-days: 7
           archive: false
+
+  remove-previous-artifacts:
+    name: Remove previous artifacts
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+
+    steps:
+      - name: Remove artifacts from previous workflow runs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for artifact_name in Tonono3.x64.zip Tonono3.arm64.zip; do
+            while IFS= read -r artifact_id; do
+              if [[ -n "$artifact_id" ]]; then
+                gh api --method DELETE \
+                  "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}"
+              fi
+            done < <(
+              gh api --paginate \
+                "/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" \
+                --jq ".artifacts[] | select(.workflow_run.id != ${GITHUB_RUN_ID}) | .id"
+            )
+          done
