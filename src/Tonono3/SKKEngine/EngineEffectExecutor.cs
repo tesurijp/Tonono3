@@ -25,7 +25,7 @@ public sealed class EngineEffectExecutor(
                     break;
                 case PersistUserDictionaryEffect:
                     dictionaryWriter ??= createUserDictionaryWriter(userDicPath);
-                    dictionaryWriter.Enqueue(result.Dictionary.User);
+                    dictionaryWriter.Enqueue(result.Dictionary);
                     break;
                 case TurnOffImeEffect:
                     turnOffIme();

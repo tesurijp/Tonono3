@@ -24,6 +24,10 @@ type SkkEngineFacade private () =
             moraModifiers moraComplete zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku viApps
 
     [<ServiceFunction>]
+    static member SerializeUserDictionary(dictionary: DictionarySnapshot) =
+        Dictionary.serialize dictionary.UserMap
+
+    [<ServiceFunction>]
     static member LoadDictionary(
         mainSources: IEnumerable<string>,
         userSource: IEnumerable<string>) =

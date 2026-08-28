@@ -78,7 +78,9 @@ public sealed class SkkEngineTests
 
         Assert.IsInstanceOfType<PersistUserDictionaryEffect>(result.Effects[0]);
         Assert.AreEqual("蚊", ((CommitTextEffect)result.Effects[1]).Text);
-        CollectionAssert.AreEqual(new[] { "蚊" }, result.Dictionary.User["か"].ToArray());
+
+        var dictionaryUser = EngineFunctions.SerializeUserDictionary(result.Dictionary);
+        Assert.AreEqual("か /蚊/", dictionaryUser.FirstOrDefault());
     }
 
     [TestMethod]
@@ -194,9 +196,10 @@ public sealed class SkkEngineTests
             Assert.AreEqual($"候補{index}", candidates.Single());
         }
 
+        var dictionaryUser = EngineFunctions.SerializeUserDictionary(dictionary);
         stopwatch.Stop();
         Assert.IsLessThan(TimeSpan.FromSeconds(1), stopwatch.Elapsed, $"Queries took {stopwatch.Elapsed}.");
-        Assert.IsEmpty(dictionary.User);
+        Assert.IsEmpty(dictionaryUser);
     }
 
     private static KeyCommand Key(int vkCode, char ch = '\0', bool shift = false, bool control = false) =>

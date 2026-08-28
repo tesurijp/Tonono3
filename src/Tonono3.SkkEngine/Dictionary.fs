@@ -50,7 +50,16 @@ module internal Dictionary =
             if previous = next then None
             else Some(DictionarySnapshot(dictionary.MainMap, Map.add reading next dictionary.UserMap))
 
-    let load (lines: IEnumerable<string>) =
+    let serializeEntry (reading: string) (candidates: string list) = sprintf "%s /%s/" reading (String.concat "/" candidates)
+    
+    let serialize (dictionary : Map<string, string list>) : IEnumerable<string> =
+        dictionary
+        |> Map.toSeq
+        |> Seq.choose (function
+            | _, [] -> None
+            | reading, candidates -> Some (serializeEntry reading candidates))
+
+    let deserialize (lines: IEnumerable<string>) =
         let entries = System.Collections.Generic.Dictionary<string, ResizeArray<string>>()
         for line in lines do
             match parseLine line with
@@ -67,4 +76,4 @@ module internal Dictionary =
         |> Map.ofSeq
 
     let loadAll (mainSources: IEnumerable<string>) (userSource: IEnumerable<string>) =
-        DictionarySnapshot(load mainSources, load userSource)
+        DictionarySnapshot(deserialize mainSources, deserialize userSource)

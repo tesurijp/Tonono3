@@ -15,6 +15,7 @@ internal static class EngineFunctions
     internal static readonly GetCompletionsFunc GetCompletions = SkkEngineFacade.GetCompletions;
     internal static readonly ProcessKeyFunc ProcessKey = SkkEngineFacade.ProcessKey;
     internal static readonly CreateUiSnapshotFunc CreateUiSnapshot = SkkEngineFacade.CreateUiSnapshot;
+    internal static readonly SerializeUserDictionaryFunc SerializeUserDictionary = SkkEngineFacade.SerializeUserDictionary;
 }
 
 internal sealed class DummyLogger

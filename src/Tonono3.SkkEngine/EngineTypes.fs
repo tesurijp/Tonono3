@@ -123,13 +123,8 @@ type AppConfig internal (
 
 [<Sealed>]
 type DictionarySnapshot internal (main: Map<string,string list>, user: Map<string,string list>) =
-    let toImmutable (source: Map<string,string list>) =
-        source
-        |> Seq.map (fun (KeyValue(k, values)) -> KeyValuePair(k, ImmutableArray.CreateRange(values)))
-        |> ImmutableDictionary.CreateRange
     member internal _.MainMap = main
     member internal _.UserMap = user
-    member _.User = toImmutable user
 
 [<AbstractClass>]
 type EngineEffect() = class end

@@ -24,11 +24,10 @@ public sealed class RuntimeInfrastructureTests
         using var env = new TestEnvironment();
         var path = env.PathFor("async-user.txt");
         var logger = new DummyLogger();
-        var first = ImmutableDictionary<string, ImmutableArray<string>>.Empty
-            .Add("よみ", ["一"]);
-        var latest = first.SetItem("よみ", ["二", "一"]);
+        var first = EngineFunctions.LoadDictionary([], ["よみ /一/"]);
+        var latest  = EngineFunctions.LoadDictionary([], ["よみ /二/一/"]);
 
-        using (var writer = new UserDictionaryWriterFactory(logger.Log).Create(path))
+        using (var writer = new UserDictionaryWriterFactory(EngineFunctions.SerializeUserDictionary, logger.Log).Create(path))
         {
             writer.Enqueue(first);
             writer.Enqueue(latest);

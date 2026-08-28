@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using System;
-using System.Collections.Immutable;
 using Tonono3.SKKEngine;
 
 namespace Tonono3;
@@ -16,7 +15,7 @@ public interface IConfigPathProvider
 
 public interface IUserDictionaryWriter : IDisposable
 {
-    void Enqueue(ImmutableDictionary<string, ImmutableArray<string>> dictionary);
+    void Enqueue(DictionarySnapshot dictionary);
 }
 
 public interface IConfigWatcher : IDisposable

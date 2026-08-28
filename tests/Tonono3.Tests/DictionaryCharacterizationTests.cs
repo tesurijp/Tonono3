@@ -43,7 +43,8 @@ public sealed class DictionaryCharacterizationTests
         var config = env.CreateConfig(userDictionaryPath: userPath);
         var dictionary = Load(config);
 
-        CollectionAssert.AreEqual(new[] { "漢字" }, dictionary.User["かんじ"].ToArray());
+        var cand = EngineFunctions.SerializeUserDictionary(dictionary);
+        Assert.AreEqual("かんじ /漢字/", cand.FirstOrDefault());
     }
 
     [TestMethod]
@@ -100,3 +101,4 @@ public sealed class DictionaryCharacterizationTests
     private static string[] Completions(DictionarySnapshot dictionary, string prefix) =>
         EngineFunctions.GetCompletions(dictionary, prefix);
 }
+

@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Immutable;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,14 +8,14 @@ using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
-internal sealed class UserDictionaryWriter(string FilePath, WriteLogFunc WriteLog) : IUserDictionaryWriter
+internal sealed class UserDictionaryWriter(string FilePath, SerializeUserDictionaryFunc serializeDictionary,  WriteLogFunc WriteLog) : IUserDictionaryWriter
 {
-    private sealed record class DicBuffer(long Version, ImmutableDictionary<string, ImmutableArray<string>> Dictionary);
+    private sealed record class DicBuffer(long Version, DictionarySnapshot Dictionary);
     private readonly static Lock lockObj = new();
     private static long dicVersion;
     private DicBuffer? buffer;
 
-    public void Enqueue(ImmutableDictionary<string, ImmutableArray<string>> dictionary)
+    public void Enqueue(DictionarySnapshot dictionary)
     {
         lock (lockObj)
         {
@@ -32,7 +30,7 @@ internal sealed class UserDictionaryWriter(string FilePath, WriteLogFunc WriteLo
             var path = Path.GetTempFileName();
             var folder = Path.GetDirectoryName(path)!;
             Directory.CreateDirectory(folder);
-            var lines = buffer.Dictionary.Select(pair => $"{pair.Key} /{string.Join("/", pair.Value)}/");
+            var lines = serializeDictionary(buffer.Dictionary);
             await File.WriteAllLinesAsync(path, lines, Encoding.UTF8).ConfigureAwait(false);
             lock (lockObj)
             {
@@ -61,8 +59,8 @@ internal sealed class UserDictionaryWriter(string FilePath, WriteLogFunc WriteLo
 }
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class UserDictionaryWriterFactory(WriteLogFunc writeLog) 
+public sealed class UserDictionaryWriterFactory(SerializeUserDictionaryFunc serializeDictionary, WriteLogFunc writeLog)
 {
     [ServiceFunction(ServiceName = "CreateUserDictionaryWriterFunc")]
-    public IUserDictionaryWriter Create(string path) => new UserDictionaryWriter(path, writeLog);
+    public IUserDictionaryWriter Create(string path) => new UserDictionaryWriter(path, serializeDictionary, writeLog);
 }
