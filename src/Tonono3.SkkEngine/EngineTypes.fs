@@ -1,13 +1,13 @@
 namespace Tonono3.SKKEngine
 
-open System
 open System.Collections.Generic
-open System.Collections.Immutable
 
 type InputMode = Disabled = 0 | Hiragana = 1 | Katakana = 2 | Zenkaku = 3
 
 [<Sealed>]
-type KeyCommand(vkCode: int, shift: bool, control: bool, ch: char) =
+type KeyCommand(vkCode: int, metaState:  bool* bool, keyToChar : int -> bool -> char) =
+    let shift, control = metaState
+    let ch = if vkCode = KeyCode.G && control then '\000' else keyToChar vkCode shift
     member _.VkCode = vkCode
     member _.Shift = shift
     member _.Control = control

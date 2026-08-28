@@ -98,11 +98,11 @@ public static partial class KeyboardInterop
     }
 
     [ServiceFunction]
-    public static (bool Control, bool Shift) GetMetaKeyState()
+    public static Tuple<bool,bool> GetMetaKeyState()
     {
         var ctrlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
         var shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
-        return (ctrlPressed, shiftPressed);
+        return new (ctrlPressed, shiftPressed);
     }
 
     [ServiceFunction]

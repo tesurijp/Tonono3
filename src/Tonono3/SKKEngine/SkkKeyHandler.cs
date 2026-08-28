@@ -20,14 +20,8 @@ public sealed class SkkKeyHandler(
     }
     private bool OnKeyIntercepted(int keyCode)
     {
-        var command = ToKeyCommand(keyCode);
+        var command = createKeyCommand(keyCode, getMetaKeyState(), convertVirtualKeyToChar.Invoke );
         return ProcessCommand(command, getActiveProcessPath());
-    }
-    private KeyCommand ToKeyCommand(int keyCode)
-    {
-        var (controlPressed, shiftPressed) = getMetaKeyState();
-        var ch = keyCode == SkkKeyConstants.VkG && controlPressed ? '\0' : convertVirtualKeyToChar(keyCode, shiftPressed);
-        return createKeyCommand(keyCode, shiftPressed, controlPressed, ch);
     }
     public void Dispose() => hook.Dispose();
 }

@@ -10,8 +10,8 @@ type SkkEngineFacade private () =
         EngineState({ Input = Disabled; Registrations = [] })
 
     [<ServiceFunction>]
-    static member CreateKeyCommand(vkCode: int, shift: bool, control: bool, ch: char) =
-        KeyCommand(vkCode, shift, control, ch)
+    static member CreateKeyCommand(vkCode: int, metaState : bool * bool , keyToCharFunc : System.Func<int, bool, char>) =
+        KeyCommand(vkCode, metaState , fun key shift -> keyToCharFunc.Invoke (key, shift))
 
     [<ServiceFunction>]
     static member CompileConfig(

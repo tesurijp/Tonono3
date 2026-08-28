@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text;
+using Tonono3.Interop;
 using Tonono3.SKKEngine;
 
 namespace Tonono3.Tests;
@@ -70,7 +71,7 @@ internal sealed class TestEnvironment : IDisposable
     }
 
     public static KeyCommand Key(int vkCode, char ch = '\0', bool shift = false, bool control = false) =>
-        EngineFunctions.CreateKeyCommand(vkCode, shift, control, ch);
+        EngineFunctions.CreateKeyCommand(vkCode, new(shift, control), KeyboardInterop.ConvertVirtualKeyToChar);
 
     public DictionarySnapshot LoadDictionary(AppConfig config) =>
         new SkkDictionaryFileLoader(EngineFunctions.LoadDictionary, _ => { })
