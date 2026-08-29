@@ -6,7 +6,7 @@ type InputMode = Disabled = 0 | Hiragana = 1 | Katakana = 2 | Zenkaku = 3
 
 [<Sealed>]
 type KeyCommand(vkCode: int, metaState:  bool* bool, keyToChar : int -> bool -> char) =
-    let shift, control = metaState
+    let control, shift = metaState
     let ch = if vkCode = KeyCode.G && control then '\000' else keyToChar vkCode shift
     member _.VkCode = vkCode
     member _.Shift = shift
