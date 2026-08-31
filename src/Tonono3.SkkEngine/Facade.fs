@@ -2,6 +2,7 @@ namespace Tonono3.SKKEngine
 
 open System.Collections.Generic
 open tsr_di
+open System.IO
 
 [<AbstractClass; Sealed>]
 type SkkEngineFacade private () =
@@ -20,8 +21,14 @@ type SkkEngineFacade private () =
         moraModifiers: Dictionary<string, List<string>>, moraComplete: Dictionary<string, string>,
         zenkakuStart: char, zenkakuEnd: char, zenkakuOffset: int,
         irregularZenkaku: Dictionary<string, string>, viApps: string array) =
-        Config.compile configFolder dictionaryPaths userDictionaryPath vowels rows irregularRomaji
-            moraModifiers moraComplete zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku viApps
+
+        let compiledConfig = 
+            Config.compile configFolder dictionaryPaths userDictionaryPath vowels rows irregularRomaji
+                moraModifiers moraComplete zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku viApps
+        match compiledConfig with
+        | Ok newconfig -> newconfig
+        | Error msg -> raise (InvalidDataException msg)
+
 
     [<ServiceFunction>]
     static member SerializeUserDictionary(dictionary: DictionarySnapshot) =

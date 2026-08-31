@@ -5,6 +5,12 @@ open System.Collections.Generic
 open System.IO
 
 module internal Config =
+    type ResultBuilder() =
+        member _.Return(x) = Ok x
+        member _.ReturnFrom(m: Result<'T, 'E>) = m
+        member _.Bind(m: Result<'T, 'E>, f: 'T -> Result<'U, 'E>) = Result.bind f m
+        member _.Zero() = Ok ()
+
     let private mapUnique entries =
         entries
         |> Seq.fold (fun state (key, value) ->
@@ -17,29 +23,36 @@ module internal Config =
         else Path.GetFullPath(path)
 
     let compileRomaji vowels (rows: Dictionary<string, string array>) (irregularRomaji: Dictionary<string, string>) =
-        rows
-        |> Seq.collect (fun row ->
-            vowels
-            |> Seq.mapi (fun index vowel -> row.Key + string vowel, row.Value[index])
-            |> Seq.filter (fun (_, kana) -> not(String.IsNullOrEmpty(kana))))
-        |> mapUnique
-        |> fun source -> irregularRomaji |> Seq.fold (fun state pair -> Map.add pair.Key pair.Value state) source
+        let roman = 
+            rows
+            |> Seq.collect (fun row ->
+                vowels
+                |> Seq.mapi (fun index vowel -> row.Key + string vowel, row.Value[index])
+                |> Seq.filter (fun (_, kana) -> not(String.IsNullOrEmpty(kana))))
+            |> mapUnique
+            |> fun source -> irregularRomaji |> Seq.fold (fun state pair -> Map.add pair.Key pair.Value state) source
+        if Map.isEmpty roman then Error "Empty Romaji table"  else Ok roman
 
     let compileMora (moraModifiers: Dictionary<string, List<string>>) =
-        moraModifiers
-        |> Seq.collect (fun pair -> pair.Value |> Seq.map (fun item -> item, pair.Key))
-        |> mapUnique
+        let mora =
+            moraModifiers
+            |> Seq.collect (fun pair -> pair.Value |> Seq.map (fun item -> item, pair.Key))
+            |> mapUnique
+        if Map.isEmpty mora then Error "Empty Mora table" else Ok mora
 
     let compileMoraComplete  (moraComplete: Dictionary<string, string>) =
         Map.ofSeq (moraComplete |> Seq.map (fun pair -> pair.Key, pair.Value))
 
     let compileZenkaku (zenkakuStart: char) (zenkakuEnd: char) (zenkakuOffset: int) (irregularZenkaku: Dictionary<string, string>)  =
-        seq { for value in int zenkakuStart .. int zenkakuEnd -> char value, string(char(value + zenkakuOffset)) }
-        |> mapUnique
-        |> fun source -> irregularZenkaku |> Seq.fold (fun state pair -> Map.add pair.Key[0] pair.Value state) source
+        let zenkaku =
+            seq { for value in int zenkakuStart .. int zenkakuEnd -> char value, string(char(value + zenkakuOffset)) }
+            |> mapUnique
+            |> fun source -> irregularZenkaku |> Seq.fold (fun state pair -> Map.add pair.Key[0] pair.Value state) source
+        if Map.isEmpty zenkaku then Error "Empty Zenkaku table" else Ok zenkaku
 
     let compileMainDictionaryPath configFolder (dictionaryPaths: string array) =
-        dictionaryPaths |> Array.map (pathConvert configFolder)
+        let paths = dictionaryPaths |> Array.map (pathConvert configFolder)
+        if Array.isEmpty paths then Error "Empty dictionary" else Ok paths
 
     let compileUserDictionaryPath configFolder userDictionaryPath =
         pathConvert configFolder userDictionaryPath
@@ -53,12 +66,25 @@ module internal Config =
         (moraModifiers: Dictionary<string, List<string>>) (moraComplete: Dictionary<string, string>)
         (zenkakuStart: char) (zenkakuEnd: char) (zenkakuOffset: int)
         (irregularZenkaku: Dictionary<string, string>) (viApps: string array) =
-        AppConfig(
-            compileRomaji vowels rows irregularRomaji,
-            compileMora moraModifiers ,
-            compileMoraComplete moraComplete,
-            compileZenkaku zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku,
-            compileMainDictionaryPath configFolder dictionaryPaths,
-            compileUserDictionaryPath configFolder userDictionaryPath,
-            compileViAppEntries viApps)
 
+        let result = ResultBuilder()
+
+        result {
+            let! romaji = compileRomaji vowels rows irregularRomaji
+            let! mora = compileMora moraModifiers 
+            let moraComp = compileMoraComplete moraComplete
+            let! zenkaku = compileZenkaku zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku
+            let! mainDictionaryPath = compileMainDictionaryPath configFolder dictionaryPaths
+            let userDictionaryPath = compileUserDictionaryPath configFolder userDictionaryPath
+            let viAppEntries = compileViAppEntries viApps
+            return AppConfig( romaji, mora, moraComp, zenkaku, mainDictionaryPath, userDictionaryPath, viAppEntries)
+        }
+
+    let HasChange(current: AppConfig, other: AppConfig) =
+        current.UserDictionaryPath <> other.UserDictionaryPath ||
+        current.Romaji <> other.Romaji ||
+        current.Mora <> other.Mora ||
+        current.MoraComplete <> other.MoraComplete ||
+        current.Zenkaku <> other.Zenkaku ||
+        current.DictionaryPathEntries <> other.DictionaryPathEntries ||
+        current.ViAppEntries <> other.ViAppEntries

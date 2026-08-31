@@ -63,25 +63,20 @@ public sealed class ConfigLoader( IConfigPathProvider paths, CompileConfigFunc c
         {
             var yaml = File.ReadAllBytes(paths.ConfigPath);
             var yamlObj = YamlSerializer.Deserialize<ConfigYaml>(yaml, serializerOptions);
-            var config = compileConfig(
+            return compileConfig(
                 paths.ConfigFolder,
-                yamlObj.DictionaryPaths,
-                yamlObj.UserDictionaryPath,
-                yamlObj.RomajiTable.Vowel,
-                yamlObj.RomajiTable.Rows,
-                yamlObj.RomajiTable.Irregular,
-                yamlObj.RomajiTable.MoraModifier,
-                yamlObj.RomajiTable.MoraAutoComplete,
+                yamlObj.DictionaryPaths ?? [],
+                yamlObj.UserDictionaryPath ?? "",
+                yamlObj.RomajiTable.Vowel ?? "",
+                yamlObj.RomajiTable.Rows ?? [],
+                yamlObj.RomajiTable.Irregular ?? [],
+                yamlObj.RomajiTable.MoraModifier ?? [],
+                yamlObj.RomajiTable.MoraAutoComplete ?? [],
                 yamlObj.ZenkakuTable.Standard.Start,
                 yamlObj.ZenkakuTable.Standard.End,
                 yamlObj.ZenkakuTable.Standard.Offset,
-                yamlObj.ZenkakuTable.Irregular,
-                yamlObj.ViCompatibleApps);
-            if (config.HasError)
-            {
-                throw new InvalidDataException("Error loading config.yaml");
-            }
-            return config;
+                yamlObj.ZenkakuTable.Irregular ?? [],
+                yamlObj.ViCompatibleApps ?? []);
         }
         catch (Exception ex)
         {

@@ -110,16 +110,6 @@ type AppConfig internal (
     member _.DictionaryPaths = Array.copy dictionaryPaths
     member _.UserDictionaryPath = userDictionaryPath
     member _.ViCompatibleApps = Array.copy viAppEntries
-    member _.HasError =
-        Map.isEmpty romaji || Map.isEmpty mora || Map.isEmpty zenkaku || Array.isEmpty dictionaryPaths
-    member this.HasChange(other: AppConfig) =
-        this.UserDictionaryPath <> other.UserDictionaryPath ||
-        this.Romaji <> other.Romaji ||
-        this.Mora <> other.Mora ||
-        this.MoraComplete <> other.MoraComplete ||
-        this.Zenkaku <> other.Zenkaku ||
-        this.DictionaryPathEntries <> other.DictionaryPathEntries ||
-        this.ViAppEntries <> other.ViAppEntries
 
 [<Sealed>]
 type DictionarySnapshot internal (main: Map<string,string list>, user: Map<string,string list>) =
