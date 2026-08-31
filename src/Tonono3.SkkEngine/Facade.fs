@@ -20,11 +20,11 @@ type SkkEngineFacade private () =
         vowels: string, rows: Dictionary<string, string array>, irregularRomaji: Dictionary<string, string>,
         moraModifiers: Dictionary<string, List<string>>, moraComplete: Dictionary<string, string>,
         zenkakuStart: char, zenkakuEnd: char, zenkakuOffset: int,
-        irregularZenkaku: Dictionary<string, string>, viApps: string array) =
+        irregularZenkaku: Dictionary<string, string>, viApps: string array, candidateSelectionKeys: string) =
 
         let compiledConfig = 
             Config.compile configFolder dictionaryPaths userDictionaryPath vowels rows irregularRomaji
-                moraModifiers moraComplete zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku viApps
+                moraModifiers moraComplete zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku viApps candidateSelectionKeys
         match compiledConfig with
         | Ok newconfig -> newconfig
         | Error msg -> raise (InvalidDataException msg)
@@ -53,4 +53,4 @@ type SkkEngineFacade private () =
         Engine.run state config dictionary command activeProcessPath
 
     [<ServiceFunction>]
-    static member CreateUiSnapshot(state, version) = Presentation.create state version
+    static member CreateUiSnapshot(state, config, version) = Presentation.create state config version

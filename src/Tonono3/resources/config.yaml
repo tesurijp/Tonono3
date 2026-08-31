@@ -9,6 +9,8 @@ viCompatibleApps:
   - devenv.exe
   - obsidian.exe
 
+candidateSelectionKeys: ASDFJKL
+
 romajiTable:
   vowel : aiueo
   rows:

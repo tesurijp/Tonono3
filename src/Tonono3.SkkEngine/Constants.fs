@@ -57,6 +57,10 @@ module internal KeyCode =
     [<Literal>]
     let Slash = 0xBF
 
+module internal ConfigDefaults =
+    [<Literal>]
+    let CandidateSelectionKeys = "ASDFJKL"
+
 module internal DisplayPrefix =
     [<Literal>]
     let Composition = "▽"

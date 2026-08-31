@@ -16,4 +16,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Tonono3\Tonono3.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\src\Tonono3\resources\config.yaml" Link="config.yaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

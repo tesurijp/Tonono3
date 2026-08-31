@@ -25,9 +25,32 @@ public sealed class RuntimeInfrastructureTests
             '\0',
             0,
             [],
-            []));
+            [],
+            ""));
 
         Assert.AreEqual("Empty Romaji table", exception.Message);
+    }
+
+    [TestMethod]
+    public void ConfigLoaderReadsCandidateSelectionKeysFromYaml()
+    {
+        using var env = new TestEnvironment();
+        var paths = new TestConfigPathProvider(env.PathFor("yaml-config"));
+        var yaml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "config.yaml"))
+            .Replace(
+                "candidateSelectionKeys: ASDFJKL",
+                "candidateSelectionKeys: ABCD",
+                StringComparison.Ordinal);
+        File.WriteAllText(paths.ConfigPath, yaml);
+        var loader = new ConfigLoader(paths, EngineFunctions.CompileConfig, _ => { });
+        var config = loader.Reload();
+        var state = new EngineState(
+            "", "よみ", InputMode.Hiragana, true, false, null, "",
+            ["一", "二", "三", "四", "五"], 4, [], -1, []);
+
+        var snapshot = EngineFunctions.CreateUiSnapshot(state, config, 0);
+
+        Assert.Contains("[A] : 五", snapshot.CandidateList);
     }
 
     [TestMethod]

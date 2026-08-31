@@ -84,6 +84,32 @@ public sealed class SkkEngineTests
     }
 
     [TestMethod]
+    public void ConfiguredSelectionKeyCommitsItsCandidateOnTheSecondPage()
+    {
+        using var env = new TestEnvironment();
+        var main = env.CreateMainDictionary(
+            "custom-selection-keys.txt",
+            Encoding.UTF8,
+            false,
+            "か /一/二/三/四/五/六/七/八/九/");
+        var runner = CreateRunner(env.CreateConfig(
+            dictionaryPaths: [main],
+            candidateSelectionKeys: "ABCD"));
+        runner.Process(Key(SkkKeyConstants.VkJ, control: true));
+        runner.Process(Key(SkkKeyConstants.VkK, 'K', shift: true));
+        runner.Process(Key(SkkKeyConstants.VkA, 'a'));
+        runner.Process(Key(SkkKeyConstants.VkSpace, ' '));
+        runner.Process(Key(SkkKeyConstants.VkSpace, ' '));
+        runner.Process(Key(SkkKeyConstants.VkSpace, ' '));
+        runner.Process(Key(SkkKeyConstants.VkSpace, ' '));
+        runner.Process(Key(SkkKeyConstants.VkSpace, ' '));
+
+        var result = runner.Process(Key('B', 'b'));
+
+        Assert.AreEqual("六", result.Effects.OfType<CommitTextEffect>().Single().Text);
+    }
+
+    [TestMethod]
     public void MissingCandidateStartsRegistrationAndReturnsLog()
     {
         using var env = new TestEnvironment();

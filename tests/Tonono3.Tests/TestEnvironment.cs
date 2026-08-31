@@ -20,7 +20,8 @@ internal sealed class TestEnvironment : IDisposable
     public AppConfig CreateConfig(
         IEnumerable<string>? dictionaryPaths = null,
         string? userDictionaryPath = null,
-        IEnumerable<string>? viCompatibleApps = null)
+        IEnumerable<string>? viCompatibleApps = null,
+        string? candidateSelectionKeys = null)
     {
         var romaji = new Dictionary<string, string>
         {
@@ -49,7 +50,8 @@ internal sealed class TestEnvironment : IDisposable
             'a',
             'ａ' - 'a',
             zenkaku,
-            viCompatibleApps?.ToArray() ?? ["vim.exe"]);
+            viCompatibleApps?.ToArray() ?? ["vim.exe"],
+            candidateSelectionKeys!);
     }
 
     public string CreateMainDictionary(string fileName, Encoding encoding, bool gzip, params string[]? lines)

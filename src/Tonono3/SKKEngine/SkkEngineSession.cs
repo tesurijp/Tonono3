@@ -40,5 +40,5 @@ public sealed class SkkEngineSession(
         effectDispatcher.Execute(result);
         return result;
     }
-    public UiSnapshot CreateUiSnapshot(long version) => createUiSnapshot(state, version);
+    public UiSnapshot CreateUiSnapshot(long version) => createUiSnapshot(state, CurrentConfig, version);
 }

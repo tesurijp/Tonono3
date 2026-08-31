@@ -81,10 +81,11 @@ module internal Engine =
     and private processConversion (config: AppConfig) (activePath: string) (command: KeyCommand) (runtime: Runtime) =
         let value = composition runtime |> Option.get
         let selection = value.Candidates |> Option.get
-        let pageStart = selection.Index / 7 * 7
-        let direct = match command.VkCode with A -> Some 0 | S -> Some 1 | D -> Some 2 | F -> Some 3 | J -> Some 4 | K -> Some 5 | L -> Some 6 | _ -> None
+        let pageSize = config.CandidateSelectionKeys.Length
+        let pageStart = selection.Index / pageSize * pageSize
+        let direct = config.CandidateSelectionKeys.IndexOf(char command.VkCode)
         match direct with
-        | Some offset when selection.Index >= 4 && pageStart + offset < selection.Items.Length ->
+        | offset when offset >= 0 && selection.Index >= pageSize && pageStart + offset < selection.Items.Length ->
             true, withComposition { value with Candidates = Some { selection with Index = pageStart + offset } } runtime |> commitAll
         | _ ->
             match command.Control, command.VkCode with
@@ -104,7 +105,7 @@ module internal Engine =
                 true, runtime |> removeDictionaryWord (dictionaryKey value) word |> withComposition { value with Candidates = candidates }
             | true, _ -> false, runtime
             | false, Space ->
-                let index = if selection.Index >= 4 then pageStart + 7 else selection.Index + 1
+                let index = if selection.Index >= pageSize then pageStart + pageSize else selection.Index + 1
                 if index < selection.Items.Length then true, withComposition { value with Candidates = Some { selection with Index = index } } runtime
                 else true, startRegistration (dictionaryKey value) runtime
             | false, Return | false, Q -> true, commitAll runtime

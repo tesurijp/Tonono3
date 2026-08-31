@@ -88,7 +88,7 @@ type EngineState internal (core: CoreState) =
 type AppConfig internal (
     romaji: Map<string,string>, mora: Map<string,string>, moraComplete: Map<string,string>,
     zenkaku: Map<char,string>, dictionaryPaths: string array, userDictionaryPath: string,
-    viAppEntries: string array) =
+    viAppEntries: string array, candidateSelectionKeys: string) =
     let stringEntries source =
         source
         |> Map.toArray
@@ -103,6 +103,7 @@ type AppConfig internal (
     member internal _.Zenkaku = zenkaku
     member internal _.DictionaryPathEntries = dictionaryPaths
     member internal _.ViAppEntries = viAppEntries
+    member internal _.CandidateSelectionKeys = candidateSelectionKeys
     member _.RomajiEntries = stringEntries romaji
     member _.MoraEntries = stringEntries mora
     member _.MoraCompleteEntries = stringEntries moraComplete

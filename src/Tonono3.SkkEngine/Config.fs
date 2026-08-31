@@ -60,12 +60,20 @@ module internal Config =
     let compileViAppEntries (viApps:string array) =
         viApps |> Array.map (fun value -> value.Replace('/', '\\'))
 
+    let compileCandidateSelectionKeys keys =
+        let value = if String.IsNullOrEmpty(keys) then ConfigDefaults.CandidateSelectionKeys else keys
+        if value |> Seq.exists (fun key -> key < 'A' || key > 'Z') then
+            Error "Candidate selection keys must contain only uppercase ASCII letters"
+        elif value |> Seq.distinct |> Seq.length <> value.Length then
+            Error "Candidate selection keys must not contain duplicates"
+        else Ok value
+
     let compile
         configFolder (dictionaryPaths: string array) userDictionaryPath
         vowels (rows: Dictionary<string, string array>) (irregularRomaji: Dictionary<string, string>)
         (moraModifiers: Dictionary<string, List<string>>) (moraComplete: Dictionary<string, string>)
         (zenkakuStart: char) (zenkakuEnd: char) (zenkakuOffset: int)
-        (irregularZenkaku: Dictionary<string, string>) (viApps: string array) =
+        (irregularZenkaku: Dictionary<string, string>) (viApps: string array) candidateSelectionKeys =
 
         let result = ResultBuilder()
 
@@ -77,7 +85,8 @@ module internal Config =
             let! mainDictionaryPath = compileMainDictionaryPath configFolder dictionaryPaths
             let userDictionaryPath = compileUserDictionaryPath configFolder userDictionaryPath
             let viAppEntries = compileViAppEntries viApps
-            return AppConfig( romaji, mora, moraComp, zenkaku, mainDictionaryPath, userDictionaryPath, viAppEntries)
+            let! selectionKeys = compileCandidateSelectionKeys candidateSelectionKeys
+            return AppConfig( romaji, mora, moraComp, zenkaku, mainDictionaryPath, userDictionaryPath, viAppEntries, selectionKeys)
         }
 
     let HasChange(current: AppConfig, other: AppConfig) =
@@ -87,4 +96,5 @@ module internal Config =
         current.MoraComplete <> other.MoraComplete ||
         current.Zenkaku <> other.Zenkaku ||
         current.DictionaryPathEntries <> other.DictionaryPathEntries ||
-        current.ViAppEntries <> other.ViAppEntries
+        current.ViAppEntries <> other.ViAppEntries ||
+        current.CandidateSelectionKeys <> other.CandidateSelectionKeys

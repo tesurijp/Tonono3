@@ -5,7 +5,7 @@
     <Version>1.2.1</Version>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="KeyConstants.fs" />
+    <Compile Include="Constants.fs" />
     <Compile Include="EngineTypes.fs" />
     <Compile Include="Config.fs" />
     <Compile Include="KanaConverter.fs" />

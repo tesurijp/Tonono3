@@ -4,8 +4,10 @@ open System
 open System.Text
 
 module internal Presentation =
-    let create (state: EngineState) (version: int64 ) =
+    let create (state: EngineState) (config: AppConfig) (version: int64 ) =
         let core = state.Core
+        let selectionKeys = config.CandidateSelectionKeys
+        let pageSize = selectionKeys.Length
         let depth = core.Registrations.Length
         let inputMode = StateModel.inputMode core.Input
         let statusMode = match inputMode with InputMode.Hiragana -> "あ" | InputMode.Katakana -> "ア" | InputMode.Zenkaku -> "全" | _ -> "？"
@@ -17,7 +19,7 @@ module internal Presentation =
             | Some item ->
                 match item.Candidates, item.Completion with
                 | Some selection, _ ->
-                    let selected = if selection.Index < 4 then List.item selection.Index selection.Items else ""
+                    let selected = if selection.Index < pageSize then List.item selection.Index selection.Items else ""
                     let suffix =
                         match item.Mode with
                         | Conversion(Some okuri) ->
@@ -30,13 +32,12 @@ module internal Presentation =
             | None -> DisplayPrefix.Composition
         let candidateList =
             match value |> Option.bind _.Candidates with
-            | Some selection when selection.Index >= 4 ->
-                let labels = "ASDFJKL"
-                let start = selection.Index / 7 * 7
+            | Some selection when selection.Index >= pageSize ->
+                let start = selection.Index / pageSize * pageSize
                 selection.Items
                 |> List.skip start
-                |> List.truncate 7
-                |> List.mapi (fun index candidate -> (if start + index = selection.Index then $"[{labels[index]}] : " else $" {labels[index]}  : ") + candidate + " ")
+                |> List.truncate pageSize
+                |> List.mapi (fun index candidate -> (if start + index = selection.Index then $"[{selectionKeys[index]}] : " else $" {selectionKeys[index]}  : ") + candidate + " ")
                 |> String.concat ""
             | _ -> ""
         let reading, word = match core.Registrations with current :: _ -> current.Reading, current.Word | [] -> "", ""

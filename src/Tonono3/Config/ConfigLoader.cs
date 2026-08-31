@@ -29,7 +29,8 @@ public partial record class ConfigYaml(
     string UserDictionaryPath,
     RomajiTable RomajiTable,
     ZenkakuTable ZenkakuTable,
-    string[] ViCompatibleApps);
+    string[] ViCompatibleApps,
+    string CandidateSelectionKeys);
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class ConfigLoader( IConfigPathProvider paths, CompileConfigFunc compileConfig, WriteLogFunc writeLog)
@@ -76,7 +77,8 @@ public sealed class ConfigLoader( IConfigPathProvider paths, CompileConfigFunc c
                 yamlObj.ZenkakuTable.Standard.End,
                 yamlObj.ZenkakuTable.Standard.Offset,
                 yamlObj.ZenkakuTable.Irregular ?? [],
-                yamlObj.ViCompatibleApps ?? []);
+                yamlObj.ViCompatibleApps ?? [],
+                yamlObj.CandidateSelectionKeys);
         }
         catch (Exception ex)
         {
