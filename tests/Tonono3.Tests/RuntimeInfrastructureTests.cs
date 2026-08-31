@@ -8,14 +8,26 @@ namespace Tonono3.Tests;
 public sealed class RuntimeInfrastructureTests
 {
     [TestMethod]
-    public void AppConfigComparisonDetectsEntryChanges()
+    public void CompileConfigRejectsIncompleteConfiguration()
     {
         using var env = new TestEnvironment();
-        var first = env.CreateConfig();
-        var second = env.CreateConfig(viCompatibleApps: ["changed.exe"]);
 
-        Assert.IsFalse(first.HasChange(first));
-        Assert.IsTrue(first.HasChange(second));
+        var exception = Assert.ThrowsExactly<InvalidDataException>(() => EngineFunctions.CompileConfig(
+            env.PathFor("config"),
+            [],
+            "",
+            "",
+            [],
+            [],
+            [],
+            [],
+            '\0',
+            '\0',
+            0,
+            [],
+            []));
+
+        Assert.AreEqual("Empty Romaji table", exception.Message);
     }
 
     [TestMethod]

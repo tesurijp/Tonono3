@@ -71,7 +71,7 @@ internal sealed class TestEnvironment : IDisposable
     }
 
     public static KeyCommand Key(int vkCode, char ch = '\0', bool shift = false, bool control = false) =>
-        EngineFunctions.CreateKeyCommand(vkCode, new(shift, control), KeyboardInterop.ConvertVirtualKeyToChar);
+        EngineFunctions.CreateKeyCommand(vkCode, new(control, shift), KeyboardInterop.ConvertVirtualKeyToChar);
 
     public DictionarySnapshot LoadDictionary(AppConfig config) =>
         new SkkDictionaryFileLoader(EngineFunctions.LoadDictionary, _ => { })
