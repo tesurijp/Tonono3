@@ -17,46 +17,35 @@
         CanMaximize="False"
         WindowStartupLocation="Manual"
         FontFamily="Meiryo"
-		FontSize="16"
+        FontSize="16"
         IsHitTestVisible="False">
-  <Border Margin="2"
-          Padding="5,3"
-          CornerRadius="8"
-          Background="#A21B1F26"
-          BorderBrush="#99F2F4F8"
-          BorderThickness="1">
+  <Window.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="#F8FAFC" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.Label">
+      <Setter Property="Foreground" Value="#BFC7D1" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.Candidate">
+      <Setter Property="Margin" Value="3,0,0,0" />
+      <Setter Property="Foreground" Value="#FDE68A" />
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+  </Window.Styles>
+  <Border Margin="2" Padding="5,3" CornerRadius="8" Background="#A21B1F26" BorderBrush="#99F2F4F8" BorderThickness="1">
     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="6">
-      <TextBlock x:Name="StatusTextBlock"
-                 Foreground="#F8FAFC"
-                 FontWeight="Bold"
-                 VerticalAlignment="Center"/>
-      <StackPanel x:Name="RegistrationPanel"
-                  Orientation="Horizontal"
-                  Spacing="4"
-                  IsVisible="False">
-        <TextBlock Text="【読】"
-                   Foreground="#BFC7D1"
-                   FontSize="12"
-                   VerticalAlignment="Center"/>
-        <TextBlock x:Name="RegistrationReadingTextBlock"
-                   Foreground="#7DD3FC"
-                   VerticalAlignment="Center"/>
-        <TextBlock Text="【語】"
-                   Foreground="#BFC7D1"
-                   FontSize="12"
-                   VerticalAlignment="Center"/>
-        <TextBlock x:Name="RegistrationWordTextBlock"
-                   Foreground="#86EFAC"
-                   VerticalAlignment="Center"/>
+      <TextBlock x:Name="StatusTextBlock" FontWeight="Bold" />
+      <StackPanel x:Name="RegistrationPanel" Orientation="Horizontal" Spacing="4" IsVisible="False">
+        <TextBlock Text="【読】" Classes="Label" />
+        <TextBlock x:Name="RegistrationReadingTextBlock" Foreground="#7DD3FC" />
+        <TextBlock Text="【語】" Classes="Label" />
+        <TextBlock x:Name="RegistrationWordTextBlock" Foreground="#86EFAC" />
       </StackPanel>
-      <TextBlock x:Name="CompositionTextBlock"
-                 Foreground="#F8FAFC"
-                 VerticalAlignment="Center"/>
-      <TextBlock x:Name="CandidateListTextBlock"
-                 Margin="3,0,0,0"
-                 Foreground="#FDE68A"
-                 FontSize="14"
-                 VerticalAlignment="Center"/>
+      <TextBlock x:Name="CompositionTextBlock" />
+      <TextBlock x:Name="CandidateListTextBlock" Classes="Candidate" />
     </StackPanel>
   </Border>
 </Window>

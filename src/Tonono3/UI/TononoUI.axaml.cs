@@ -56,6 +56,8 @@ public partial class TononoUI : Window, ITononoUi
             if (snapshot.IsVisible)
             {
                 Show();
+                Topmost = false;
+                Topmost = true;
                 ApplyNativeWindowStyles();
                 UpdatePosition();
             }
