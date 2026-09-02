@@ -125,17 +125,24 @@ internal sealed class ControllerTestContext : IDisposable
         Hook = new FakeKeyboardHook();
         EffectDispatcher = new FakeEffectDispatcher();
         var keyboard = new FakeKeyboardInput(Hook);
+        Ui = new FakeTononoUi();
+        Menu = new FakeSystemMenu();
         Session = new SkkEngineSession(
             EngineFunctions.CreateInitialState,
             EngineFunctions.ProcessKey,
             EngineFunctions.CreateUiSnapshot,
             EffectDispatcher);
-        Controller = new SkkController(Watcher, keyboard, Session);
+        Controller = new SkkController(Watcher, keyboard, Session, 
+            new FakeTononoUiFactory(Ui).Create, new FakeSystemMenuFactory(Menu).Create,
+            () => { }
+            );
     }
 
     internal SkkController Controller { get; }
     internal FakeConfigWatcher Watcher { get; }
     internal FakeKeyboardHook Hook { get; }
+    internal FakeTononoUi Ui { get; }
+    internal FakeSystemMenu Menu { get; }
     internal FakeEffectDispatcher EffectDispatcher { get; }
     internal SkkEngineSession Session { get; }
 

@@ -1,21 +1,25 @@
 using System;
 using System.Threading;
+using Tonono3.AutoDefined;
 using tsr_di;
 
 namespace Tonono3.SKKEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler keyHandler, ISkkEngineSession skkEngineSession) : ISkkController
+public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler keyHandler, ISkkEngineSession skkEngineSession,
+     CreateTononoUiFunc createTononoUi,
+     CreateSystemMenuFunc createSystemMenu,
+    [FromNamed("KeyHookEnable")] ExecUiActionFunc enableHook) : ISkkController
 {
     private static readonly Lock gate = new();
+    private ITononoUi? ui;
+    private ISystemMenu? menu;
     private PendingRuntime? pendingRuntime;
     private bool started;
     private bool disposed;
     private long uiVersion;
 
-    public event Action<UiSnapshot>? UiUpdated;
-
-    public UiSnapshot Start()
+    public void Start()
     {
         lock (gate)
         {
@@ -24,20 +28,25 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
                 throw new InvalidOperationException();
             }
             started = true;
+
+            ui = createTononoUi();
+            menu = createSystemMenu();
             configWatcher.RuntimeReloaded += OnRuntimeReloaded;
             var (currentConfig, dictionary) = configWatcher.LoadRuntime();
             configWatcher.Start();
             keyHandler.RegisterCallback(ProcessCommand);
+            enableHook();
             skkEngineSession.ApplyRuntime(currentConfig, dictionary);
-            return skkEngineSession.CreateUiSnapshot(uiVersion);
+            var snapshot = skkEngineSession.CreateUiSnapshot(uiVersion);
+            ui.ApplySnapshot(snapshot);
         }
     }
 
-    private void OnRuntimeReloaded( long generation, AppConfig config, DictionarySnapshot dictionary)
+    private void OnRuntimeReloaded(long generation, AppConfig config, DictionarySnapshot dictionary)
     {
         lock (gate)
         {
-            if (disposed || pendingRuntime is not null && pendingRuntime.Generation > generation)
+            if (disposed || (pendingRuntime?.Generation ?? -1) > generation)
             {
                 return;
             }
@@ -55,7 +64,8 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
             }
             ApplyPendingRuntime();
             var result = skkEngineSession.Process(command, activeProcessPath);
-            UiUpdated?.Invoke(skkEngineSession.CreateUiSnapshot(++uiVersion));
+            var snapshot = skkEngineSession.CreateUiSnapshot(++uiVersion);
+            ui?.ApplySnapshot(snapshot);
             return result.IsHandled;
         }
     }
@@ -82,9 +92,10 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
             }
             disposed = true;
             configWatcher.RuntimeReloaded -= OnRuntimeReloaded;
-            UiUpdated = null;
         }
 
+        menu?.Dispose();
+        ui?.Close();
         keyHandler.Dispose();
         configWatcher.Dispose();
         GC.SuppressFinalize(this);

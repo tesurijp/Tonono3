@@ -51,9 +51,7 @@ public interface IEngineEffectDispatcher
 
 public interface ISkkController : IDisposable
 {
-    event Action<UiSnapshot>? UiUpdated;
-    UiSnapshot Start();
-    bool ProcessCommand(KeyCommand command, string? activeProcessPath);
+    void Start();
 }
 
 public interface ITononoUi

@@ -44,26 +44,15 @@ public sealed class ApplicationControl(WriteLogFunc writeLog)
 [ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class ApplicationCoordinator(
     ISkkController controller,
-     CreateTononoUiFunc createTononoUi,
-     CreateSystemMenuFunc createSystemMenu,
-    [FromNamed("KeyHookEnable")] ExecUiActionFunc enableHook,
     InitializeApplicationLifetimeFunc initializeApplicationLifetime) : IApplicationCoordinator
 {
-    private ITononoUi? ui;
-    private ISystemMenu? menu;
     private bool disposed;
 
     public void Start(IControlledApplicationLifetime? controlledLifetime)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         initializeApplicationLifetime(controlledLifetime);
-
-        ui = createTononoUi();
-        controller.UiUpdated += ui.ApplySnapshot;
-        menu = createSystemMenu();
-        var snapshot = controller.Start();
-        enableHook();
-        ui.ApplySnapshot(snapshot);
+        controller.Start();
     }
 
     public void Dispose()
@@ -73,12 +62,6 @@ public sealed class ApplicationCoordinator(
             return;
         }
         disposed = true;
-        if (ui is not null)
-        {
-            controller.UiUpdated -= ui.ApplySnapshot;
-        }
-        menu?.Dispose();
-        ui?.Close();
         controller.Dispose();
         GC.SuppressFinalize(this);
     }

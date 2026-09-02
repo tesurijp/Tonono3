@@ -90,17 +90,17 @@ public sealed class PresentationSnapshotTests
         var dictionary = env.LoadDictionary(config);
         using var context = new ControllerTestContext(config, dictionary);
         var controller = context.Controller;
-        var snapshots = new List<UiSnapshot>();
-        controller.UiUpdated += snapshots.Add;
+        var snapshots = context.Ui.Snapshots;
         controller.Start();
 
         controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkJ, control: true), null);
         controller.ProcessCommand(TestEnvironment.Key(SkkKeyConstants.VkK, 'K', shift: true), null);
 
-        Assert.HasCount(2, snapshots);
-        Assert.AreEqual(1, snapshots[0].Version);
-        Assert.AreEqual(2, snapshots[1].Version);
-        Assert.AreEqual("[あ]", snapshots[1].StatusText);
-        Assert.IsTrue(snapshots[1].IsVisible);
+        Assert.HasCount(3, snapshots);
+        Assert.AreEqual(1, snapshots[1].Version);
+        Assert.AreEqual(2, snapshots[2].Version);
+        Assert.AreEqual("[あ]", snapshots[2].StatusText);
+        Assert.IsFalse(snapshots[1].IsVisible);
+        Assert.IsTrue(snapshots[2].IsVisible);
     }
 }

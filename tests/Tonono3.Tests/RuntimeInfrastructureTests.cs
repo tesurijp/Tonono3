@@ -191,14 +191,9 @@ public sealed class RuntimeInfrastructureTests
         using var env = new TestEnvironment();
         var config = env.CreateConfig();
         var context = new ControllerTestContext(config, env.LoadDictionary(config));
-        var ui = new FakeTononoUi();
-        var menu = new FakeSystemMenu();
         var applicationControl = new FakeApplicationControl();
         var coordinator = new ApplicationCoordinator(
             context.Controller,
-            new FakeTononoUiFactory(ui).Create,
-            new FakeSystemMenuFactory(menu).Create,
-            () => { },
             applicationControl.Initialize);
 
         coordinator.Start(null);
@@ -206,8 +201,8 @@ public sealed class RuntimeInfrastructureTests
         coordinator.Dispose();
 
         Assert.AreEqual(1, applicationControl.InitializeCount);
-        Assert.AreEqual(1, ui.CloseCount);
-        Assert.AreEqual(1, menu.DisposeCount);
+        Assert.AreEqual(1, context.Ui.CloseCount);
+        Assert.AreEqual(1, context.Menu.DisposeCount);
         Assert.AreEqual(1, context.Watcher.DisposeCount);
         Assert.AreEqual(1, context.Hook.DisposeCount);
     }
