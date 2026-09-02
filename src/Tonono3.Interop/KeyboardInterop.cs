@@ -87,13 +87,17 @@ public static partial class KeyboardInterop
     }
 
     [ServiceFunction]
-    public static IDisposable InstallHook(Func<int, bool> KeyInterceptFunc, Action<string> writeLog)
+    public static IDisposable? InstallHook(Func<int, bool> KeyInterceptFunc, Action<string> writeLog)
     {
         using var curProcess = Process.GetCurrentProcess();
         using var curModule = curProcess.MainModule;
         var keyHandler = new KeyHandler(KeyInterceptFunc, writeLog);
         keyHandler.HookProc = keyHandler.HookCallback;
         keyHandler.HookId = SetWindowsHookEx(WH_KEYBOARD_LL, keyHandler.HookProc, GetModuleHandle(curModule?.ModuleName), 0);
+        if(keyHandler.HookId == IntPtr.Zero)
+        {
+            return null;
+        }
         return keyHandler;
     }
 

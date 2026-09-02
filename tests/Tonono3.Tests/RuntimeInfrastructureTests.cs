@@ -198,6 +198,7 @@ public sealed class RuntimeInfrastructureTests
             context.Controller,
             new FakeTononoUiFactory(ui).Create,
             new FakeSystemMenuFactory(menu).Create,
+            () => { },
             applicationControl.Initialize);
 
         coordinator.Start(null);

@@ -12,7 +12,10 @@ public sealed class SystemMenu : ISystemMenu
         WindowIcon appIcon,
         ExecUiActionFunc restart,
         ExecUiActionFunc shutdown,
+        ExecUiActionFunc hookEnable,
+        ExecUiActionFunc hookDisable,
         ExecUiActionFunc openConfigFile,
+        KeyHookStateFunc getKeyHookState,
         CreateInfoWindowFunc createInfoWindow)
     {
         trayicon = new TrayIcon
@@ -22,6 +25,7 @@ public sealed class SystemMenu : ISystemMenu
             Menu = [
                 makeMenu("情報",  () => ShowInfoWindow(createInfoWindow, getAppConfig)),
                 makeMenu("設定", openConfigFile),
+                makeCheckMenu("有効", getKeyHookState, hookEnable, hookDisable),
                 makeMenu("再起動", restart),
                 new NativeMenuItemSeparator(),
                 makeMenu("終了", shutdown)
@@ -33,6 +37,20 @@ public sealed class SystemMenu : ISystemMenu
         {
             var menu = new NativeMenuItem(header);
             menu.Click += (_, _) => act();
+            return menu;
+        }
+        static NativeMenuItem makeCheckMenu(string header, KeyHookStateFunc getState, ExecUiActionFunc enableAction, ExecUiActionFunc diableAction)
+        {
+            var menu = new NativeMenuItem(header)
+            {
+                ToggleType = MenuItemToggleType.CheckBox,
+                IsChecked = true
+            };
+            menu.Click += (_, _) =>
+            {
+                (getState() ? diableAction : enableAction)();
+                menu.IsChecked = getState();
+            };
             return menu;
         }
     }

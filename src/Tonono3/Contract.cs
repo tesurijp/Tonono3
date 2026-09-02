@@ -26,12 +26,14 @@ public interface IConfigWatcher : IDisposable
 }
 public interface ISkkKeyHandler : IDisposable
 {
-    void Start(Func<KeyCommand, string?, bool> process);
+    void RegisterCallback(Func<KeyCommand, string?, bool> process);
 }
 
 public interface IKeyboardHook : IDisposable
 {
     void Install(Func<int, bool> KeyIntercepted);
+    void Uninstall();
+    bool IsEnabled();
 }
 public interface ISkkEngineSession
 {

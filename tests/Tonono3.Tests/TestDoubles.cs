@@ -64,18 +64,19 @@ internal sealed class FakeKeyboardHook : IKeyboardHook
     }
     public void Dispose() => DisposeCount++;
     internal bool? Publish(int value) => func?.Invoke(value);
+    public void Uninstall() { }
+    public bool IsEnabled() => true;
 }
 
 internal sealed class FakeKeyboardInput(IKeyboardHook hook) : ISkkKeyHandler
 {
-
-    public void Start(Func<KeyCommand, string?, bool> process)
-    {
-    }
-
     public void Dispose()
     {
         hook.Dispose();
+    }
+
+    public void RegisterCallback(Func<KeyCommand, string?, bool> process)
+    {
     }
 }
 

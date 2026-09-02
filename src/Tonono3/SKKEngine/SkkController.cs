@@ -27,7 +27,7 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
             configWatcher.RuntimeReloaded += OnRuntimeReloaded;
             var (currentConfig, dictionary) = configWatcher.LoadRuntime();
             configWatcher.Start();
-            keyHandler.Start(ProcessCommand);
+            keyHandler.RegisterCallback(ProcessCommand);
             skkEngineSession.ApplyRuntime(currentConfig, dictionary);
             return skkEngineSession.CreateUiSnapshot(uiVersion);
         }

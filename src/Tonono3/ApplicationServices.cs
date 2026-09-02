@@ -46,6 +46,7 @@ public sealed class ApplicationCoordinator(
     ISkkController controller,
      CreateTononoUiFunc createTononoUi,
      CreateSystemMenuFunc createSystemMenu,
+    [FromNamed("KeyHookEnable")] ExecUiActionFunc enableHook,
     InitializeApplicationLifetimeFunc initializeApplicationLifetime) : IApplicationCoordinator
 {
     private ITononoUi? ui;
@@ -61,6 +62,7 @@ public sealed class ApplicationCoordinator(
         controller.UiUpdated += ui.ApplySnapshot;
         menu = createSystemMenu();
         var snapshot = controller.Start();
+        enableHook();
         ui.ApplySnapshot(snapshot);
     }
 

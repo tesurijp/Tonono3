@@ -15,6 +15,9 @@ public sealed class UiFactory(
     SetNonActiveWindowFunc setNonActiveWindow,
     [FromNamed("RestartApplication")] ExecUiActionFunc restart,
     [FromNamed("ShutdownApplication")] ExecUiActionFunc shutdown,
+    [FromNamed("KeyHookEnable")] ExecUiActionFunc enableHook,
+    [FromNamed("KeyHookDisable")] ExecUiActionFunc disableHook,
+    KeyHookStateFunc getHookState,
     GetAppConfigFunc getAppConfig,
     WriteLogFunc writeLog)
 {
@@ -30,7 +33,7 @@ public sealed class UiFactory(
     public ITononoUi CreateTononoUi() => new TononoUI(getTargetWindowPosition, setNonActiveWindow) { Icon = icon };
 
     [ServiceFunction]
-    public ISystemMenu CreateSystemMenu() => new SystemMenu(getAppConfig, icon , restart, shutdown, OpenConfigFile, CreateInfoWindow);
+    public ISystemMenu CreateSystemMenu() => new SystemMenu(getAppConfig, icon, restart, shutdown, enableHook, disableHook, OpenConfigFile, getHookState, CreateInfoWindow);
 
     public void OpenConfigFile()
     {
