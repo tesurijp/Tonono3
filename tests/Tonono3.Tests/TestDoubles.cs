@@ -38,7 +38,8 @@ internal sealed class StubDictionaryLoader(
 
 internal sealed class FakeConfigWatcher(AppConfig config, DictionarySnapshot dict) : IConfigWatcher
 {
-    public event Action<long, AppConfig, DictionarySnapshot>? RuntimeReloaded;
+    private Action<long, AppConfig, DictionarySnapshot>? RuntimeReloaded;
+    public void RegisterCallback(Action<long, AppConfig, DictionarySnapshot> reload) => RuntimeReloaded = reload;
     internal int StartCount { get; private set; }
     internal int DisposeCount { get; private set; }
 
@@ -53,31 +54,17 @@ internal sealed class FakeConfigWatcher(AppConfig config, DictionarySnapshot dic
 
 internal sealed class FakeKeyboardHook : IKeyboardHook
 {
-    internal Func<int, bool>? func;
     internal int InstallCount { get; private set; }
     internal int DisposeCount { get; private set; }
 
-    public void Install(Func<int, bool> KeyIntercepted)
+    public void Install()
     {
-        func = KeyIntercepted;
         InstallCount++;
     }
+    public void RegisterCallback(Func<KeyCommand, string?, bool> process) { }
     public void Dispose() => DisposeCount++;
-    internal bool? Publish(int value) => func?.Invoke(value);
     public void Uninstall() { }
     public bool IsEnabled() => true;
-}
-
-internal sealed class FakeKeyboardInput(IKeyboardHook hook) : ISkkKeyHandler
-{
-    public void Dispose()
-    {
-        hook.Dispose();
-    }
-
-    public void RegisterCallback(Func<KeyCommand, string?, bool> process)
-    {
-    }
 }
 
 internal sealed class FakeActiveProcess
@@ -124,7 +111,6 @@ internal sealed class ControllerTestContext : IDisposable
         Watcher = new FakeConfigWatcher(config, dictionary);
         Hook = new FakeKeyboardHook();
         EffectDispatcher = new FakeEffectDispatcher();
-        var keyboard = new FakeKeyboardInput(Hook);
         Ui = new FakeTononoUi();
         Menu = new FakeSystemMenu();
         Session = new SkkEngineSession(
@@ -132,10 +118,7 @@ internal sealed class ControllerTestContext : IDisposable
             EngineFunctions.ProcessKey,
             EngineFunctions.CreateUiSnapshot,
             EffectDispatcher);
-        Controller = new SkkController(Watcher, keyboard, Session, 
-            new FakeTononoUiFactory(Ui).Create, new FakeSystemMenuFactory(Menu).Create,
-            () => { }
-            );
+        Controller = new SkkController(Watcher, Hook , Session, new FakeTononoUiFactory(Ui).Create, new FakeSystemMenuFactory(Menu).Create);
     }
 
     internal SkkController Controller { get; }

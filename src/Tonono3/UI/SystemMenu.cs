@@ -44,7 +44,7 @@ public sealed class SystemMenu : ISystemMenu
             var menu = new NativeMenuItem(header)
             {
                 ToggleType = MenuItemToggleType.CheckBox,
-                IsChecked = true
+                IsChecked = getState()
             };
             menu.Click += (_, _) =>
             {

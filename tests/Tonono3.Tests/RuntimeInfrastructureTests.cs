@@ -90,7 +90,7 @@ public sealed class RuntimeInfrastructureTests
                 return dictionary;
             }).Load,
             new DummyLogger().Log);
-        watcher.RuntimeReloaded += (generation, _, _) => published.TrySetResult(generation);
+        watcher.RegisterCallback((generation, _, _) => published.TrySetResult(generation));
 
         UnsafeAccessors.ScheduleReload(watcher);
         UnsafeAccessors.ScheduleReload(watcher);
@@ -112,7 +112,7 @@ public sealed class RuntimeInfrastructureTests
             new StubConfigLoader(() => throw new InvalidDataException("invalid config")).Reload,
             new StubDictionaryLoader((_, _) => throw new AssertFailedException("Dictionary must not load.")).Load,
             logger.Log);
-        watcher.RuntimeReloaded += (_, _, _) => Interlocked.Increment(ref callbackCount);
+        watcher.RegisterCallback((_, _, _) => Interlocked.Increment(ref callbackCount));
 
         UnsafeAccessors.ScheduleReload(watcher);
         await Task.Delay(800);
@@ -133,7 +133,7 @@ public sealed class RuntimeInfrastructureTests
             new StubConfigLoader(() => config).Reload,
             new StubDictionaryLoader((_, _) => dictionary).Load,
             new DummyLogger().Log);
-        watcher.RuntimeReloaded += (_, _, _) => Interlocked.Increment(ref callbackCount);
+        watcher.RegisterCallback((_, _, _) => Interlocked.Increment(ref callbackCount));
 
         UnsafeAccessors.ScheduleReload(watcher);
         watcher.Dispose();

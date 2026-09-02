@@ -6,10 +6,8 @@ using tsr_di;
 namespace Tonono3.SKKEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler keyHandler, ISkkEngineSession skkEngineSession,
-     CreateTononoUiFunc createTononoUi,
-     CreateSystemMenuFunc createSystemMenu,
-    [FromNamed("KeyHookEnable")] ExecUiActionFunc enableHook) : ISkkController
+public sealed class SkkController( IConfigWatcher configWatcher, IKeyboardHook keyHandler, ISkkEngineSession skkEngineSession,
+     CreateTononoUiFunc createTononoUi, CreateSystemMenuFunc createSystemMenu ) : ISkkController
 {
     private static readonly Lock gate = new();
     private ITononoUi? ui;
@@ -18,7 +16,6 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
     private bool started;
     private bool disposed;
     private long uiVersion;
-
     public void Start()
     {
         lock (gate)
@@ -29,19 +26,18 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
             }
             started = true;
 
-            ui = createTononoUi();
-            menu = createSystemMenu();
-            configWatcher.RuntimeReloaded += OnRuntimeReloaded;
+            configWatcher.RegisterCallback(OnRuntimeReloaded);
             var (currentConfig, dictionary) = configWatcher.LoadRuntime();
             configWatcher.Start();
             keyHandler.RegisterCallback(ProcessCommand);
-            enableHook();
+            keyHandler.Install();
+            ui = createTononoUi();
+            menu = createSystemMenu();
             skkEngineSession.ApplyRuntime(currentConfig, dictionary);
             var snapshot = skkEngineSession.CreateUiSnapshot(uiVersion);
             ui.ApplySnapshot(snapshot);
         }
     }
-
     private void OnRuntimeReloaded(long generation, AppConfig config, DictionarySnapshot dictionary)
     {
         lock (gate)
@@ -53,7 +49,6 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
             pendingRuntime = new(generation, config, dictionary);
         }
     }
-
     public bool ProcessCommand(KeyCommand command, string? activeProcessPath)
     {
         lock (gate)
@@ -69,7 +64,6 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
             return result.IsHandled;
         }
     }
-
     private void ApplyPendingRuntime()
     {
         lock (gate)
@@ -91,7 +85,6 @@ public sealed class SkkController( IConfigWatcher configWatcher, ISkkKeyHandler 
                 return;
             }
             disposed = true;
-            configWatcher.RuntimeReloaded -= OnRuntimeReloaded;
         }
 
         menu?.Dispose();

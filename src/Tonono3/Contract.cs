@@ -20,20 +20,15 @@ public interface IUserDictionaryWriter : IDisposable
 
 public interface IConfigWatcher : IDisposable
 {
-    event Action<long, AppConfig, DictionarySnapshot>? RuntimeReloaded;
+    void RegisterCallback(Action<long, AppConfig, DictionarySnapshot> reload);
     (AppConfig, DictionarySnapshot) LoadRuntime();
     void Start();
-}
-public interface ISkkKeyHandler : IDisposable
-{
-    void RegisterCallback(Func<KeyCommand, string?, bool> process);
 }
 
 public interface IKeyboardHook : IDisposable
 {
-    void Install(Func<int, bool> KeyIntercepted);
-    void Uninstall();
-    bool IsEnabled();
+    void RegisterCallback(Func<KeyCommand, string?, bool> process);
+    void Install();
 }
 public interface ISkkEngineSession
 {

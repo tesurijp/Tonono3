@@ -6,18 +6,28 @@ using tsr_di;
 namespace Tonono3.SKKEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
-public sealed class KeyboardHook(WriteLogFunc writeLog, InstallHookFunc installHook ) : IKeyboardHook
+public sealed class KeyboardHook(
+    WriteLogFunc writeLog,
+    InstallHookFunc installHook,
+    GetMetaKeyStateFunc getMetaKeyState,
+    ConvertVirtualKeyToCharFunc convertVirtualKeyToChar,
+    CreateKeyCommandFunc createKeyCommand,
+    GetActiveProcessPathFunc getActiveProcessPath
+) : IKeyboardHook
 {
     private static readonly Lock lockObj = new();
     private IDisposable? keyHandler;
-    public void Install(Func<int, bool > KeyIntercepted)
+
+    [ServiceFunction(ServiceType = typeof(ExecUiActionFunc), Name = "KeyHookEnable")]
+    public void Install()
     {
         lock (lockObj)
         {
-            keyHandler ??= installHook(KeyIntercepted, writeLog.Invoke);
+            keyHandler ??= installHook(OnKeyIntercepted, writeLog.Invoke);
         }
     }
 
+    [ServiceFunction(ServiceType = typeof(ExecUiActionFunc), Name = "KeyHookDisable")]
     public void Uninstall()
     {
         lock (lockObj)
@@ -26,7 +36,7 @@ public sealed class KeyboardHook(WriteLogFunc writeLog, InstallHookFunc installH
             keyHandler = null;
         }
     }
-    [ServiceFunction(ServiceName ="KeyHookStateFunc")]
+    [ServiceFunction(ServiceName = "KeyHookStateFunc")]
     public bool IsEnabled()
     {
         lock (lockObj)
@@ -39,5 +49,14 @@ public sealed class KeyboardHook(WriteLogFunc writeLog, InstallHookFunc installH
     {
         Uninstall();
         GC.SuppressFinalize(this);
+    }
+
+    Func<KeyCommand, string?, bool> ProcessCommand = (_, _) => false;
+    public void RegisterCallback(Func<KeyCommand, string?, bool> process) => ProcessCommand = process;
+
+    private bool OnKeyIntercepted(int keyCode)
+    {
+        var command = createKeyCommand(keyCode, getMetaKeyState(), convertVirtualKeyToChar.Invoke);
+        return ProcessCommand(command, getActiveProcessPath());
     }
 }

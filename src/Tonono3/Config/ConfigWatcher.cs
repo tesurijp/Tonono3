@@ -25,8 +25,8 @@ public sealed class ConfigWatcher(
     private bool disposed;
     private string? activeConfigPath = Path.GetFullPath(paths.ConfigPath);
 
-    public event Action<long, AppConfig, DictionarySnapshot>? RuntimeReloaded;
-
+    private Action<long, AppConfig, DictionarySnapshot> RuntimeReloaded = (_, _, _) => { };
+    public void RegisterCallback(Action<long, AppConfig, DictionarySnapshot> reload) => RuntimeReloaded = reload;
     public void Start()
     {
         lock (gate)
@@ -128,7 +128,7 @@ public sealed class ConfigWatcher(
                     activeConfigPath = Path.GetFullPath(paths.ConfigPath);
                 }
             }
-            RuntimeReloaded?.Invoke(scheduledGeneration, conf, dict);
+            RuntimeReloaded(scheduledGeneration, conf, dict);
             writeLog("config.yaml update success.");
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
