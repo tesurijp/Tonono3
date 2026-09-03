@@ -89,29 +89,15 @@ type AppConfig internal (path : string,
     romaji: Map<string,string>, mora: Map<string,string>, moraComplete: Map<string,string>,
     zenkaku: Map<char,string>, dictionaryPaths: string array, userDictionaryPath: string,
     viAppEntries: string array, candidateSelectionKeys: string) =
-    let stringEntries source =
-        source
-        |> Map.toArray
-        |> Array.map (fun (key, value) -> KeyValuePair(key, value))
-    let charEntries source =
-        source
-        |> Map.toArray
-        |> Array.map (fun (key, value) -> KeyValuePair(key, value))
-    member internal _.Romaji = romaji
-    member internal _.Mora = mora
-    member internal _.MoraComplete = moraComplete
-    member internal _.Zenkaku = zenkaku
-    member internal _.DictionaryPathEntries = dictionaryPaths
-    member internal _.ViAppEntries = viAppEntries
-    member internal _.CandidateSelectionKeys = candidateSelectionKeys
+    member _.Romaji = romaji
+    member _.Mora = mora
+    member _.MoraComplete = moraComplete
+    member _.Zenkaku = zenkaku
+    member _.DictionaryPaths = dictionaryPaths
+    member _.ViAppEntries = viAppEntries
+    member _.CandidateSelectionKeys = candidateSelectionKeys
     member _.Path = path
-    member _.RomajiEntries = stringEntries romaji
-    member _.MoraEntries = stringEntries mora
-    member _.MoraCompleteEntries = stringEntries moraComplete
-    member _.ZenkakuEntries = charEntries zenkaku
-    member _.DictionaryPaths = Array.copy dictionaryPaths
     member _.UserDictionaryPath = userDictionaryPath
-    member _.ViCompatibleApps = Array.copy viAppEntries
 
 [<Sealed>]
 type DictionarySnapshot internal (main: Map<string,string list>, user: Map<string,string list>) =

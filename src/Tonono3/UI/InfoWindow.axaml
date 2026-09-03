@@ -20,9 +20,18 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="#FFFDFD" />
         <Setter Property="BorderBrush" Value="#FFD0D7DE" />
-        <Setter Property="Margin" Value="0,0,0,6" />
-        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="Margin" Value="0,0,0,3" />
+        <Setter Property="Padding" Value="10,5" />
         <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="TextBlock">
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="ListBoxItem TextBlock">
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+    <Style Selector="DataGrid TextBlock">
+        <Setter Property="FontWeight" Value="Normal" />
     </Style>
     <Style Selector="ListBox">
         <Setter Property="BorderThickness" Value="1" />
@@ -47,21 +56,21 @@
     </Style>
 
   </Window.Styles>
-  <Grid Margin="8" RowDefinitions="Auto,*">
+  <Grid Margin="4" RowDefinitions="Auto,*">
     <Border Grid.Row="0" Classes="default">
       <StackPanel Spacing="2">
-        <TextBlock Text="Tonono3 SKK-Like Input System" FontSize="16" FontWeight="Bold" />
-        <TextBlock Text="{CompiledBinding VersionInfo}"/>
-        <TextBlock Text=".NET 10 (C#) / AvaloniaUI" />
+        <TextBlock Text="Tonono3 SKK-Like Input System" FontSize="16" />
+        <TextBlock Text="{CompiledBinding VersionInfo}" FontWeight="Normal"/>
+        <TextBlock Text=".NET 10 (C#) / AvaloniaUI" FontWeight="Normal"/> 
       </StackPanel>
     </Border>
 
-    <Border Grid.Row="1" Padding="3" Classes="default">
+    <Border Grid.Row="1" Classes="default">
       <TabControl>
         <TabItem Header="全般" FontSize="12" >
-          <Grid Margin="6" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="6">
-            <TextBlock Text="設定パス" Grid.Row="0" FontWeight="Bold"/>
-            <TextBox Text="{CompiledBinding ConfigPath}" Grid.Row="1"
+          <StackPanel Spacing="5">
+            <TextBlock Text="設定パス" />
+            <TextBox Text="{CompiledBinding ConfigPath}"
                      MinHeight="28" 
                      Padding="4,1"
                      IsReadOnly="True"
@@ -69,12 +78,21 @@
                      BorderBrush="#FFCBD5E1"
                      BorderThickness="1"/>
 
-            <TextBlock Text="読み込み済み辞書" Grid.Row="2" FontWeight="Bold" />
+            <TextBlock Text="読み込み済み辞書" />
             <ListBox Grid.Row="3" ItemsSource="{CompiledBinding Config.DictionaryPaths}" />
 
-            <TextBlock Text="Vi互換アプリ (ESCの特殊処理)" Grid.Row="4" FontWeight="Bold"/>
-            <ListBox Grid.Row="5" ItemsSource="{CompiledBinding Config.ViCompatibleApps}" />
-          </Grid>
+            <TextBlock Text="Vi互換アプリ (ESCの特殊処理)" />
+            <ListBox Grid.Row="5" ItemsSource="{CompiledBinding Config.ViAppEntries}" />
+
+            <TextBlock Text="漢字候補選択キー" />
+            <TextBox Text="{CompiledBinding Config.CandidateSelectionKeys}"
+                     MinHeight="28" 
+                     Padding="4,1"
+                     IsReadOnly="True"
+                     Background="#FFFFFFFF"
+                     BorderBrush="#FFCBD5E1"
+                     BorderThickness="1"/>
+          </StackPanel>
         </TabItem>
 
         <TabItem Header="変換テーブル" FontSize="12">
@@ -83,31 +101,31 @@
                 ColumnDefinitions="*,*,*"
                 ColumnSpacing="8"
                 RowSpacing="4">
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="ローマ字変換" FontWeight="Bold"/>
-            <DataGrid Grid.Row="1" Grid.Column="0" Grid.RowSpan="3" ItemsSource="{CompiledBinding Romaji}" >
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="ローマ字変換" />
+            <DataGrid Grid.Row="1" Grid.Column="0" Grid.RowSpan="3" ItemsSource="{CompiledBinding Config.Romaji}" >
               <DataGrid.Columns>
                 <DataGridTextColumn Header="ローマ字" Width="*" Binding="{CompiledBinding Key}" />
                 <DataGridTextColumn Header="かな" Width="*" Binding="{CompiledBinding Value}" />
               </DataGrid.Columns>
             </DataGrid>
 
-            <TextBlock Grid.Row="0" Grid.Column="1" Text="撥音・促音加工" FontWeight="Bold" />
-            <DataGrid Grid.Row="1" Grid.Column="1" ItemsSource="{CompiledBinding Mora}" >
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="撥音・促音加工" />
+            <DataGrid Grid.Row="1" Grid.Column="1" ItemsSource="{CompiledBinding Config.Mora}" >
               <DataGrid.Columns>
                 <DataGridTextColumn Header="入力" Width="*" Binding="{CompiledBinding Key}"/>
                 <DataGridTextColumn Header="修飾" Width="*" Binding="{CompiledBinding Value}"/>
               </DataGrid.Columns>
             </DataGrid>
 
-            <TextBlock Grid.Row="2" Grid.Column="1" Text="末尾撥音補完" FontWeight="Bold" />
-            <DataGrid Grid.Row="3" Grid.Column="1" ItemsSource="{CompiledBinding MoraComplete}" >
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="末尾撥音補完" />
+            <DataGrid Grid.Row="3" Grid.Column="1" ItemsSource="{CompiledBinding Config.MoraComplete}" >
               <DataGrid.Columns>
                 <DataGridTextColumn Header="入力" Width="*" Binding="{CompiledBinding Key}" />
                 <DataGridTextColumn Header="補完" Width="*" Binding="{CompiledBinding Value}" />
               </DataGrid.Columns>
             </DataGrid>
-            <TextBlock Grid.Row="0" Grid.Column="2" Text="全角直接入力テーブル" FontWeight="Bold"/>
-            <DataGrid Grid.Row="1" Grid.RowSpan="3"  Grid.Column="2" ItemsSource="{CompiledBinding Zenkaku}" >
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="全角直接入力テーブル" />
+            <DataGrid Grid.Row="1" Grid.RowSpan="3"  Grid.Column="2" ItemsSource="{CompiledBinding Config.Zenkaku}" >
               <DataGrid.Columns>
                 <DataGridTextColumn Header="入力" Width="*" Binding="{CompiledBinding Key}" />
                 <DataGridTextColumn Header="全角" Width="*" Binding="{CompiledBinding Value}" />

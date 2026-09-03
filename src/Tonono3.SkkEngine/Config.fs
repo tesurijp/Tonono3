@@ -88,13 +88,3 @@ module internal Config =
             let! selectionKeys = compileCandidateSelectionKeys candidateSelectionKeys
             return AppConfig(path, romaji, mora, moraComp, zenkaku, mainDictionaryPath, userDictionaryPath, viAppEntries, selectionKeys)
         }
-
-    let HasChange(current: AppConfig, other: AppConfig) =
-        current.UserDictionaryPath <> other.UserDictionaryPath ||
-        current.Romaji <> other.Romaji ||
-        current.Mora <> other.Mora ||
-        current.MoraComplete <> other.MoraComplete ||
-        current.Zenkaku <> other.Zenkaku ||
-        current.DictionaryPathEntries <> other.DictionaryPathEntries ||
-        current.ViAppEntries <> other.ViAppEntries ||
-        current.CandidateSelectionKeys <> other.CandidateSelectionKeys
