@@ -85,7 +85,7 @@ type EngineState internal (core: CoreState) =
     member _.RegistrationStack = core.Registrations |> List.rev |> List.toArray
 
 [<Sealed>]
-type AppConfig internal (
+type AppConfig internal (path : string, 
     romaji: Map<string,string>, mora: Map<string,string>, moraComplete: Map<string,string>,
     zenkaku: Map<char,string>, dictionaryPaths: string array, userDictionaryPath: string,
     viAppEntries: string array, candidateSelectionKeys: string) =
@@ -104,6 +104,7 @@ type AppConfig internal (
     member internal _.DictionaryPathEntries = dictionaryPaths
     member internal _.ViAppEntries = viAppEntries
     member internal _.CandidateSelectionKeys = candidateSelectionKeys
+    member _.Path = path
     member _.RomajiEntries = stringEntries romaji
     member _.MoraEntries = stringEntries mora
     member _.MoraCompleteEntries = stringEntries moraComplete

@@ -15,7 +15,7 @@ type SkkEngineFacade private () =
         KeyCommand(vkCode, metaState , fun key shift -> keyToCharFunc.Invoke (key, shift))
 
     [<ServiceFunction>]
-    static member CompileConfig(
+    static member CompileConfig( path: string,
         configFolder: string, dictionaryPaths: string array, userDictionaryPath: string,
         vowels: string, rows: Dictionary<string, string array>, irregularRomaji: Dictionary<string, string>,
         moraModifiers: Dictionary<string, List<string>>, moraComplete: Dictionary<string, string>,
@@ -23,7 +23,7 @@ type SkkEngineFacade private () =
         irregularZenkaku: Dictionary<string, string>, viApps: string array, candidateSelectionKeys: string) =
 
         let compiledConfig = 
-            Config.compile configFolder dictionaryPaths userDictionaryPath vowels rows irregularRomaji
+            Config.compile path configFolder dictionaryPaths userDictionaryPath vowels rows irregularRomaji
                 moraModifiers moraComplete zenkakuStart zenkakuEnd zenkakuOffset irregularZenkaku viApps candidateSelectionKeys
         match compiledConfig with
         | Ok newconfig -> newconfig

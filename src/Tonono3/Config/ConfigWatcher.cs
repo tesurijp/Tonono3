@@ -23,7 +23,7 @@ public sealed class ConfigWatcher(
     private long generation;
     private bool started;
     private bool disposed;
-    private string? activeConfigPath = Path.GetFullPath(paths.ConfigPath);
+    private string? lastLoadedPath = Path.GetFullPath(paths.ConfigPath);
 
     private Action<long, AppConfig, DictionarySnapshot> RuntimeReloaded = (_, _, _) => { };
     public void RegisterCallback(Action<long, AppConfig, DictionarySnapshot> reload) => RuntimeReloaded = reload;
@@ -37,7 +37,6 @@ public sealed class ConfigWatcher(
             }
             systemWatcher = CreateWatcher(paths.SystemConfigFolder);
             userWatcher = CreateWatcher(paths.UserConfigFolder);
-            activeConfigPath = Path.GetFullPath(paths.ConfigPath);
             started = true;
         }
     }
@@ -58,7 +57,7 @@ public sealed class ConfigWatcher(
         };
         watcher.Created += OnChanged;
         watcher.Changed += OnChanged;
-        watcher.Renamed += OnRenamed;
+        watcher.Renamed += OnChanged;
         watcher.Deleted += OnChanged;
         watcher.EnableRaisingEvents = true;
         return watcher;
@@ -66,28 +65,20 @@ public sealed class ConfigWatcher(
 
     private void OnChanged(object sender, FileSystemEventArgs e)
     {
-        if (e.ChangeType == WatcherChangeTypes.Deleted && IsActiveConfigPath(e.FullPath))
+        if (e is RenamedEventArgs { OldFullPath: var oldpath })
         {
-            writeLog($"Active config file was deleted: {e.FullPath}");
-            return;
+            if (IsSameLastLoaded(oldpath) && !IsSameLastLoaded(e.FullPath))
+            {
+                writeLog($"Last loaded config file was renamed: {oldpath}");
+            }
+        }
+        if (e.ChangeType == WatcherChangeTypes.Deleted && IsSameLastLoaded(e.FullPath))
+        {
+            writeLog($"Last loaded config file was deleted: {e.FullPath}");
         }
         ScheduleReload();
     }
-
-    private void OnRenamed(object sender, RenamedEventArgs e)
-    {
-        if (IsActiveConfigPath(e.OldFullPath) && !IsActiveConfigPath(e.FullPath))
-        {
-            writeLog($"Active config file was renamed: {e.OldFullPath}");
-            return;
-        }
-        ScheduleReload();
-    }
-
-    private bool IsActiveConfigPath(string path) =>
-        activeConfigPath is not null &&
-        string.Equals(Path.GetFullPath(path), activeConfigPath, StringComparison.OrdinalIgnoreCase);
-
+    private bool IsSameLastLoaded(string path) => string.Equals(Path.GetFullPath(path), lastLoadedPath, StringComparison.OrdinalIgnoreCase);
     internal void ScheduleReload()
     {
         CancellationToken token;
@@ -112,9 +103,10 @@ public sealed class ConfigWatcher(
         try
         {
             await Task.Delay(debounceDelay, token).ConfigureAwait(false);
-            if (activeConfigPath is not null && !File.Exists(activeConfigPath))
+            if (!File.Exists(paths.ConfigPath))
             {
-                throw new FileNotFoundException("The active config file does not exist.", activeConfigPath);
+                writeLog($"The last loaded config file does not exist. {paths.ConfigPath}");
+                return;
             }
             var (conf, dict) = await Task.Run(LoadRuntime, token).ConfigureAwait(false);
             lock (gate)
@@ -123,10 +115,7 @@ public sealed class ConfigWatcher(
                 {
                     return;
                 }
-                if (systemWatcher is not null)
-                {
-                    activeConfigPath = Path.GetFullPath(paths.ConfigPath);
-                }
+                lastLoadedPath = conf.Path;
             }
             RuntimeReloaded(scheduledGeneration, conf, dict);
             writeLog("config.yaml update success.");
@@ -151,7 +140,6 @@ public sealed class ConfigWatcher(
             disposed = true;
             ++generation;
             debounceCancellation?.Cancel();
-            RuntimeReloaded = null;
         }
         DisposeWatcher(systemWatcher);
         DisposeWatcher(userWatcher);

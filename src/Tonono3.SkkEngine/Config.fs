@@ -68,7 +68,7 @@ module internal Config =
             Error "Candidate selection keys must not contain duplicates"
         else Ok value
 
-    let compile
+    let compile path
         configFolder (dictionaryPaths: string array) userDictionaryPath
         vowels (rows: Dictionary<string, string array>) (irregularRomaji: Dictionary<string, string>)
         (moraModifiers: Dictionary<string, List<string>>) (moraComplete: Dictionary<string, string>)
@@ -86,7 +86,7 @@ module internal Config =
             let userDictionaryPath = compileUserDictionaryPath configFolder userDictionaryPath
             let viAppEntries = compileViAppEntries viApps
             let! selectionKeys = compileCandidateSelectionKeys candidateSelectionKeys
-            return AppConfig( romaji, mora, moraComp, zenkaku, mainDictionaryPath, userDictionaryPath, viAppEntries, selectionKeys)
+            return AppConfig(path, romaji, mora, moraComp, zenkaku, mainDictionaryPath, userDictionaryPath, viAppEntries, selectionKeys)
         }
 
     let HasChange(current: AppConfig, other: AppConfig) =

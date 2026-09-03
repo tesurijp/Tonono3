@@ -38,6 +38,7 @@ internal sealed class TestEnvironment : IDisposable
         var zenkaku = new Dictionary<string, string> { ["a"] = "ａ", [" "] = "　", ["!"] = "！" };
 
         return EngineFunctions.CompileConfig(
+            Path.Combine( root,"config.yaml"),
             root,
             dictionaryPaths?.ToArray() ?? [CreateMainDictionary("main.txt", Encoding.UTF8, false)],
             userDictionaryPath ?? PathFor("user.txt"),

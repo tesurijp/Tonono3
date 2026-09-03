@@ -13,6 +13,7 @@ public sealed class RuntimeInfrastructureTests
         using var env = new TestEnvironment();
 
         var exception = Assert.ThrowsExactly<InvalidDataException>(() => EngineFunctions.CompileConfig(
+            Path.Combine( env.PathFor("config"),"config.yaml"),
             env.PathFor("config"),
             [],
             "",

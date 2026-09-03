@@ -59,13 +59,15 @@ public sealed class ConfigLoader( IConfigPathProvider paths, CompileConfigFunc c
     [ServiceFunction(ServiceName = "ReloadConfigFunc")]
     public AppConfig Reload()
     {
-        writeLog($"Loading config from: {paths.ConfigPath}");
+        var path = paths.ConfigPath;
+        writeLog($"Loading config from: {path}");
         try
         {
             var yaml = File.ReadAllBytes(paths.ConfigPath);
             var yamlObj = YamlSerializer.Deserialize<ConfigYaml>(yaml, serializerOptions);
             return compileConfig(
-                paths.ConfigFolder,
+                Path.GetFullPath(path),
+                Path.GetDirectoryName(path)!,
                 yamlObj.DictionaryPaths ?? [],
                 yamlObj.UserDictionaryPath ?? "",
                 yamlObj.RomajiTable.Vowel ?? "",
