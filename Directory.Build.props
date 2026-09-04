@@ -8,7 +8,7 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <Authors>tesuri</Authors>
-    <Company>Your Company</Company>
+    <Company>tesuri.org</Company>
     <Copyright>Copyright © 2026</Copyright>
   </PropertyGroup>
 
