@@ -1,6 +1,4 @@
-namespace Tonono3.SKKEngine
-
-open System.Collections.Generic
+namespace Tonono3.SkkEngine
 
 type InputMode = Disabled = 0 | Hiragana = 1 | Katakana = 2 | Zenkaku = 3
 

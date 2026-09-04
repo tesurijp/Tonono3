@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Tonono3.AutoDefined;
 using tsr_di;
 
-namespace Tonono3.SKKEngine;
+namespace Tonono3.SkkEngine;
 
 internal sealed class UserDictionaryWriter(string FilePath, SerializeUserDictionaryFunc serializeDictionary,  WriteLogFunc WriteLog) : IUserDictionaryWriter
 {

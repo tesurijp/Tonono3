@@ -6,7 +6,7 @@ using System.Text;
 using Tonono3.AutoDefined;
 using tsr_di;
 
-namespace Tonono3.SKKEngine;
+namespace Tonono3.SkkEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class SkkDictionaryFileLoader(LoadDictionaryFunc loadDictionary, WriteLogFunc writeLog)

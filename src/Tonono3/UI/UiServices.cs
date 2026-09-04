@@ -3,7 +3,7 @@ using Avalonia.Platform;
 using System;
 using System.Diagnostics;
 using Tonono3.AutoDefined;
-using Tonono3.SKKEngine;
+using Tonono3.SkkEngine;
 using tsr_di;
 
 namespace Tonono3.UI;

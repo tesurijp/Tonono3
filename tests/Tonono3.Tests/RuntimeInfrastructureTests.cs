@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
-using Tonono3.SKKEngine;
+using Tonono3.SkkEngine;
 
 namespace Tonono3.Tests;
 

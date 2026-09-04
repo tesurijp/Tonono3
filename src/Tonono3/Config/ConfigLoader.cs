@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Tonono3.AutoDefined;
-using Tonono3.SKKEngine;
+using Tonono3.SkkEngine;
 using tsr_di;
 using VYaml.Annotations;
 using VYaml.Serialization;

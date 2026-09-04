@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using System;
-using Tonono3.SKKEngine;
+using Tonono3.SkkEngine;
 
 namespace Tonono3;
 public interface IConfigPathProvider

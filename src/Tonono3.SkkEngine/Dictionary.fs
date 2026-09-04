@@ -1,4 +1,4 @@
-namespace Tonono3.SKKEngine
+namespace Tonono3.SkkEngine
 
 open System
 open System.Collections.Generic

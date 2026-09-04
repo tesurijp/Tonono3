@@ -3,7 +3,7 @@ using System.Threading;
 using Tonono3.AutoDefined;
 using tsr_di;
 
-namespace Tonono3.SKKEngine;
+namespace Tonono3.SkkEngine;
 
 [ServiceClass(Lifetime = Lifetime.Singleton)]
 public sealed class SkkController( IConfigWatcher configWatcher, IKeyboardHook keyHandler, ISkkEngineSession skkEngineSession,

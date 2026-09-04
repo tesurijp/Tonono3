@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Tonono3.AutoDefined;
-using Tonono3.SKKEngine;
+using Tonono3.SkkEngine;
 using tsr_di;
 
 namespace Tonono3;

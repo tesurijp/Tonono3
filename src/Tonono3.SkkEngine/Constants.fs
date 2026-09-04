@@ -1,4 +1,4 @@
-namespace Tonono3.SKKEngine
+namespace Tonono3.SkkEngine
 
 [<AbstractClass; Sealed>]
 type SkkKeyConstants private () =
