@@ -5,6 +5,21 @@ using Tonono3.SkkEngine;
 
 namespace Tonono3.Tests;
 
+internal static class SkkKeyConstants
+{
+    internal const int VkTab = 0x09;
+    internal const int VkReturn = 0x0D;
+    internal const int VkEscape = 0x1B;
+    internal const int VkSpace = 0x20;
+    internal const int VkLeft = 0x25;
+    internal const int VkA = 0x41;
+    internal const int VkJ = 0x4A;
+    internal const int VkK = 0x4B;
+    internal const int VkL = 0x4C;
+    internal const int VkQ = 0x51;
+    internal const int VkSlash = 0xBF;
+}
+
 [TestClass]
 public sealed class SkkEngineTests
 {

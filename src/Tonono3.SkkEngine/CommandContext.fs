@@ -17,17 +17,17 @@ module internal CommandContext =
         let currentMode = mode runtime
         let input =
             if value.Mode = Direct && value.Romaji = "" && value.Text = "" && value.Candidates.IsNone && value.Completion.IsNone then
-                if currentMode = InputMode.Disabled then Disabled else Idle currentMode
+                if currentMode = InputMode.Direct then Disabled else Idle currentMode
             else Composing(currentMode, value)
         withInput input runtime
     let addEffect (effect: EngineEffect) (runtime: Runtime) = { runtime with Effects = effect :: runtime.Effects }
     let turnOffIme (runtime: Runtime) = addEffect (TurnOffImeEffect()) runtime
     let addLog (message: string) (runtime: Runtime) = addEffect (WriteLogEffect(message)) runtime
-    let reset (runtime: Runtime) = withInput (if mode runtime = InputMode.Disabled then Disabled else Idle(mode runtime)) runtime
+    let reset (runtime: Runtime) = withInput (if mode runtime = InputMode.Direct then Disabled else Idle(mode runtime)) runtime
     let changeMode (next: InputMode) (runtime: Runtime) =
         match runtime.State.Input with
         | Composing(_, value) -> withInput (Composing(next, value)) runtime
-        | _ -> withInput (if next = InputMode.Disabled then Disabled else Idle next) runtime
+        | _ -> withInput (if next = InputMode.Direct then Disabled else Idle next) runtime
 
     let commitProduced (text: string) (runtime: Runtime) =
         if String.IsNullOrEmpty(text) then runtime

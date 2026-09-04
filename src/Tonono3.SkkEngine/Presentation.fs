@@ -41,4 +41,4 @@ module internal Presentation =
                 |> String.concat ""
             | _ -> ""
         let reading, word = match core.Registrations with current :: _ -> current.Reading, current.Word | [] -> "", ""
-        UiSnapshot(version, visible, status, not core.Registrations.IsEmpty, reading, word, compositionText, candidateList)
+        UiSnapshot(version, visible, status, not core.Registrations.IsEmpty, reading, word, compositionText, candidateList , inputMode)

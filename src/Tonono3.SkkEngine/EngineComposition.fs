@@ -71,8 +71,8 @@ module internal EngineComposition =
             config.ViAppEntries |> Array.exists (fun app -> normalized.EndsWith(app, StringComparison.OrdinalIgnoreCase))
 
     let preCheck (activePath: string) (config: AppConfig) (command: KeyCommand) (runtime: Runtime) =
-        if command.VkCode = Escape && mode runtime <> InputMode.Disabled && viCompatible activePath config then
-            Some(false, runtime |> reset |> changeMode InputMode.Disabled)
+        if command.VkCode = Escape && mode runtime <> InputMode.Direct && viCompatible activePath config then
+            Some(false, runtime |> reset |> changeMode InputMode.Direct)
         elif command.VkCode >= NavigationFirst && command.VkCode <= NavigationLast then Some(false, runtime)
         else None
 

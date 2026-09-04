@@ -1,6 +1,6 @@
 namespace Tonono3.SkkEngine
 
-type InputMode = Disabled = 0 | Hiragana = 1 | Katakana = 2 | Zenkaku = 3
+type InputMode = Direct = 0 | Hiragana = 1 | Katakana = 2 | Zenkaku = 3
 
 [<Sealed>]
 type KeyCommand(vkCode: int, metaState:  bool* bool, keyToChar : int -> bool -> char) =
@@ -39,7 +39,7 @@ module internal StateModel =
     let emptyComposition mode =
         { Romaji = ""; Text = ""; Mode = mode; Candidates = None; Completion = None }
 
-    let inputMode = function Disabled -> InputMode.Disabled | Idle mode | Composing(mode, _) -> mode
+    let inputMode = function Disabled -> InputMode.Direct | Idle mode | Composing(mode, _) -> mode
 
     let composition = function Composing(_, value) -> Some value | _ -> None
 
@@ -59,7 +59,7 @@ module internal StateModel =
             else None
         let active = romaji <> "" || text <> "" || compositionMode <> Direct || selection.IsSome || completion.IsSome
         let input =
-            if mode = InputMode.Disabled then Disabled
+            if mode = InputMode.Direct then Disabled
             elif active then Composing(mode, { Romaji = romaji; Text = text; Mode = compositionMode; Candidates = selection; Completion = completion })
             else Idle mode
         { Input = input; Registrations = registrations |> Array.rev |> List.ofArray }
@@ -131,7 +131,7 @@ type TransitionResult(state: EngineState, dictionary: DictionarySnapshot, handle
 [<Sealed>]
 type UiSnapshot(version : int64,
     isVisible: bool, statusText: string, isRegistration: bool, registrationReading: string,
-    registrationWord: string, composition: string, candidateList: string) =
+    registrationWord: string, composition: string, candidateList: string, inputMode : InputMode) =
     member _.Version = version
     member _.IsVisible = isVisible
     member _.StatusText = statusText
@@ -140,3 +140,4 @@ type UiSnapshot(version : int64,
     member _.RegistrationWord = registrationWord
     member _.Composition = composition
     member _.CandidateList = candidateList
+    member _.InputMode = inputMode

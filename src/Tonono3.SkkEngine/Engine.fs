@@ -26,7 +26,7 @@ module internal Engine =
     and private processIdle (config: AppConfig) (command: KeyCommand) (runtime: Runtime) =
         match command.Control, command.VkCode, command.Shift with
         | true, _, _ -> commonControl command runtime
-        | false, L, false -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Disabled
+        | false, L, false -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Direct
         | false, L, true -> true, runtime |> commitAll |> changeMode InputMode.Zenkaku
         | false, Q, _ -> handleQ config runtime
         | false, Slash, false -> true, withComposition (StateModel.emptyComposition Abbreviation) runtime
@@ -43,7 +43,7 @@ module internal Engine =
         match command.Control, command.VkCode, command.Shift with
         | _, Escape, _ -> true, reset runtime
         | true, _, _ -> commonControl command runtime
-        | false, L, false -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Disabled
+        | false, L, false -> true, runtime |> turnOffIme |> commitAll |> changeMode InputMode.Direct
         | false, L, true -> true, runtime |> commitAll |> changeMode InputMode.Zenkaku
         | false, Q, _ -> handleQ config runtime
         | false, Return, _ -> true, commitAll runtime
