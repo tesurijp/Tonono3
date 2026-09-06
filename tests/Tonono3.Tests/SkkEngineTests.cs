@@ -32,7 +32,7 @@ public sealed class SkkEngineTests
 
         var result = runner.Process(Key(SkkKeyConstants.VkJ, control: true));
 
-        Assert.AreEqual(InputMode.Disabled, initial.Mode);
+        Assert.AreEqual(InputMode.Direct, initial.Mode);
         Assert.AreEqual(InputMode.Hiragana, result.State.Mode);
         Assert.IsTrue(result.IsHandled);
     }
@@ -166,7 +166,7 @@ public sealed class SkkEngineTests
         Assert.AreEqual(InputMode.Hiragana, runner.Process(Key(SkkKeyConstants.VkJ, control: true)).State.Mode);
         Assert.AreEqual(InputMode.Katakana, runner.Process(Key(SkkKeyConstants.VkQ, 'q')).State.Mode);
         Assert.AreEqual(InputMode.Hiragana, runner.Process(Key(SkkKeyConstants.VkQ, 'q')).State.Mode);
-        Assert.AreEqual(InputMode.Disabled, runner.Process(Key(SkkKeyConstants.VkL, 'l')).State.Mode);
+        Assert.AreEqual(InputMode.Direct, runner.Process(Key(SkkKeyConstants.VkL, 'l')).State.Mode);
         runner.Process(Key(SkkKeyConstants.VkJ, control: true));
         Assert.AreEqual(InputMode.Zenkaku, runner.Process(Key(SkkKeyConstants.VkL, 'L', shift: true)).State.Mode);
     }
@@ -187,7 +187,7 @@ public sealed class SkkEngineTests
         Assert.IsInstanceOfType<TurnOffImeEffect>(disabled.Effects[0]);
 
         Assert.IsTrue(disabled.IsHandled);
-        Assert.AreEqual(InputMode.Disabled, disabled.State.Mode);
+        Assert.AreEqual(InputMode.Direct, disabled.State.Mode);
     }
 
     [TestMethod]
@@ -219,7 +219,7 @@ public sealed class SkkEngineTests
         var result = runner.Process(Key(SkkKeyConstants.VkEscape), @"C:\tools\vim.exe");
 
         Assert.IsFalse(result.IsHandled);
-        Assert.AreEqual(InputMode.Disabled, result.State.Mode);
+        Assert.AreEqual(InputMode.Direct, result.State.Mode);
     }
 
     [TestMethod]

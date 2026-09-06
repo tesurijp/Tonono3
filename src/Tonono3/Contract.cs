@@ -56,7 +56,10 @@ public interface ITononoUi
     void Close();
 }
 
-public interface ISystemMenu : IDisposable;
+public interface ISystemMenu : IDisposable
+{
+    void ApplySnapshot(UiSnapshot snapshot);
+}
 
 public interface IApplicationCoordinator : IDisposable
 {

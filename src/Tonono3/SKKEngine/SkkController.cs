@@ -36,6 +36,7 @@ public sealed class SkkController( IConfigWatcher configWatcher, IKeyboardHook k
             skkEngineSession.ApplyRuntime(currentConfig, dictionary);
             var snapshot = skkEngineSession.CreateUiSnapshot(uiVersion);
             ui.ApplySnapshot(snapshot);
+            menu.ApplySnapshot(snapshot);
         }
     }
     private void OnRuntimeReloaded(long generation, AppConfig config, DictionarySnapshot dictionary)
@@ -61,6 +62,7 @@ public sealed class SkkController( IConfigWatcher configWatcher, IKeyboardHook k
             var result = skkEngineSession.Process(command, activeProcessPath);
             var snapshot = skkEngineSession.CreateUiSnapshot(++uiVersion);
             ui?.ApplySnapshot(snapshot);
+            menu?.ApplySnapshot(snapshot);
             return result.IsHandled;
         }
     }

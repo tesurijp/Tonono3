@@ -157,6 +157,9 @@ internal sealed class FakeTononoUiFactory(FakeTononoUi ui)
 internal sealed class FakeSystemMenu : ISystemMenu
 {
     internal int DisposeCount { get; private set; }
+
+    public void ApplySnapshot(UiSnapshot snapshot) { }
+
     public void Dispose() => DisposeCount++;
 }
 

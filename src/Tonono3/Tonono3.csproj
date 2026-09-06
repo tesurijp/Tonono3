@@ -3,10 +3,10 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <NoWarn>$(NoWarn);AVLN3001</NoWarn>
-    <ApplicationIcon>TONONO.ICO</ApplicationIcon>
+    <ApplicationIcon>assets/TONONO.ICO</ApplicationIcon>
     <ResDir>resources\</ResDir>
     <NativeAotPublishDir>$(MSBuildThisFileDirectory)..\..\publish\</NativeAotPublishDir>
-    <Version>1.2.3</Version>
+    <Version>1.2.4</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -36,7 +36,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="TONONO.ICO" />
+    <AvaloniaResource Include="assets/TONONO.ICO" />
+    <AvaloniaResource Include="assets/TONONO_hiragana.ICO" />
+    <AvaloniaResource Include="assets/TONONO_katakana.ICO" />
+    <AvaloniaResource Include="assets/TONONO_zenkaku.ICO" />
+    <AvaloniaResource Include="assets/TONONO_direct.ICO" />
+    <AvaloniaResource Include="assets/TONONO_disable.ICO" />
   </ItemGroup>
 
   <ItemGroup>

@@ -23,7 +23,7 @@ public sealed class UiFactory(
 {
     static UiFactory()
     {
-        using var stream = AssetLoader.Open(new Uri("avares://Tonono3/TONONO.ICO"));
+        using var stream = AssetLoader.Open(new Uri("avares://Tonono3/assets/TONONO.ICO"));
         icon = new WindowIcon(stream);
     }
     private static readonly WindowIcon icon;
@@ -33,7 +33,7 @@ public sealed class UiFactory(
     public ITononoUi CreateTononoUi() => new TononoUI(getTargetWindowPosition, setNonActiveWindow) { Icon = icon };
 
     [ServiceFunction]
-    public ISystemMenu CreateSystemMenu() => new SystemMenu(getAppConfig, icon, restart, shutdown, enableHook, disableHook, OpenConfigFile, getHookState, CreateInfoWindow);
+    public ISystemMenu CreateSystemMenu() => new SystemMenu(getAppConfig, restart, shutdown, enableHook, disableHook, OpenConfigFile, getHookState, CreateInfoWindow);
 
     public void OpenConfigFile()
     {
